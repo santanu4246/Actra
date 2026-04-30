@@ -9,5 +9,5 @@ app.get("/health", (req, res)=>{
 })
 
 app.listen(PORT, ()=>{
-    console.log(`server is lisening http://localhost:${PORT}`)
+    console.log(`server is lisening on http://localhost:${PORT}`)
 })
