@@ -1,5 +1,5 @@
 import { useThemeColor, useIsLightTheme } from "@/hooks/useThemeColor";
-import { Ionicons } from "@expo/vector-icons";
+import { Ion } from "@/components/ui/icon";
 import { useFonts } from "expo-font";
 import { LinearGradient } from "expo-linear-gradient";
 import { type Href, useRouter } from "expo-router";
@@ -115,7 +115,7 @@ export default function WelcomeScreen() {
                     },
                   ]}
                 >
-                  <Ionicons
+                  <Ion
                     name="flag"
                     size={24}
                     color={light ? "#007725" : Colors.primaryLight}
@@ -147,7 +147,7 @@ export default function WelcomeScreen() {
               ]}
             >
               <View style={styles.metaChip}>
-                <Ionicons
+                <Ion
                   name="time-outline"
                   size={16}
                   color={light ? "#007725" : Colors.primary}
@@ -172,7 +172,7 @@ export default function WelcomeScreen() {
                   },
                 ]}
               >
-                <Ionicons
+                <Ion
                   name="moon-outline"
                   size={16}
                   color={light ? "#666666" : Colors.textSecondary}
@@ -205,7 +205,7 @@ export default function WelcomeScreen() {
               >
                 {"Today's tasks"}
               </Text>
-              <Ionicons
+              <Ion
                 name="sparkles"
                 size={22}
                 color={light ? "#A0A0A0" : Colors.textSecondary}
@@ -233,7 +233,7 @@ export default function WelcomeScreen() {
                   ]}
                 >
                   {i === 0 ? (
-                    <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+                    <Ion name="checkmark" size={14} color="#FFFFFF" />
                   ) : null}
                 </View>
                 <Text
@@ -274,7 +274,7 @@ export default function WelcomeScreen() {
                   },
                 ]}
               >
-                <Ionicons
+                <Ion
                   name="notifications"
                   size={24}
                   color={light ? "#007725" : Colors.primaryLight}
@@ -328,7 +328,7 @@ export default function WelcomeScreen() {
               </Text>
             </View>
             <View style={styles.adaptRow}>
-              <Ionicons
+              <Ion
                 name="git-branch-outline"
                 size={18}
                 color={light ? "#007725" : Colors.primary}

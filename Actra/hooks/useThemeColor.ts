@@ -11,6 +11,7 @@ export function useThemeColor() {
     text: isDark ? "#FAFAFA" : "#111111",
     border: isDark ? "#262626" : "#E5E5E5",
     primary: isDark ? "#10B981" : "#007725",
+    error: "#E74C3C",
   };
 }
 
