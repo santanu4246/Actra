@@ -122,9 +122,9 @@ export default function LoginScreen() {
 
       if (success) {
         if (isLogin) {
-          router.replace("/home" as Href);
+          router.replace("/(tabs)/home" as Href);
         } else {
-          router.replace("/goal" as Href);
+          router.replace("/(onboarding)/goal" as Href);
         }
       }
     } catch (error) {

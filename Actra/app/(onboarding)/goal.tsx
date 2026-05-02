@@ -55,7 +55,7 @@ export default function GoalSetupScreen() {
     // Simulate saving goal
     setTimeout(() => {
       setLoading(false);
-      router.replace("/home" as Href);
+      router.replace("/(onboarding)/generating" as Href);
     }, 600);
   };
 
