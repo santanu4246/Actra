@@ -1,8 +1,13 @@
-import { useColorScheme } from "react-native";
+import { useThemeStore } from "@/store/theme-store";
+
+export function useIsLightTheme(): boolean {
+  const { activeTheme } = useThemeStore();
+  return activeTheme === "light";
+}
 
 export function useThemeColor() {
-  const scheme = useColorScheme();
-  const isDark = scheme === "dark";
+  const isLight = useIsLightTheme();
+  const isDark = !isLight;
 
   return {
     card: isDark ? "#141414" : "#FFFFFF",
@@ -13,8 +18,4 @@ export function useThemeColor() {
     primary: isDark ? "#10B981" : "#007725",
     error: "#E74C3C",
   };
-}
-
-export function useIsLightTheme(): boolean {
-  return useColorScheme() !== "dark";
 }

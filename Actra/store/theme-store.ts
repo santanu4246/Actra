@@ -1,9 +1,13 @@
-import { useColorScheme } from "react-native";
+import { create } from "zustand";
 
-/** System-backed theme for screens expecting `activeTheme` */
-export function useThemeStore() {
-  const scheme = useColorScheme();
-  return {
-    activeTheme: scheme === "dark" ? ("dark" as const) : ("light" as const),
-  };
-}
+type Theme = "light" | "dark";
+
+type ThemeState = {
+  activeTheme: Theme;
+  setTheme: (theme: Theme) => void;
+};
+
+export const useThemeStore = create<ThemeState>((set) => ({
+  activeTheme: "light",
+  setTheme: (activeTheme) => set({ activeTheme }),
+}));

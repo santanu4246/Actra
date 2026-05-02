@@ -29,6 +29,7 @@ export default function GeneratingScreen() {
 
   const [stepIndex, setStepIndex] = useState(0);
   const fadeAnim = useState(new Animated.Value(0))[0];
+  const pulseAnim = useState(new Animated.Value(1))[0];
 
   const isLight = activeTheme === "light";
 
@@ -44,6 +45,22 @@ export default function GeneratingScreen() {
       duration: 500,
       useNativeDriver: true,
     }).start();
+
+    // Pulse animation for the icon
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.15,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
 
     const interval = setInterval(() => {
       setStepIndex((prev) => {
@@ -99,13 +116,14 @@ export default function GeneratingScreen() {
       />
       <View style={styles.container}>
         <View style={styles.iconContainer}>
-          <View
+          <Animated.View
             style={[
               styles.iconBg,
               {
                 backgroundColor: isLight
                   ? "#E7FFC6"
                   : "rgba(16, 185, 129, 0.15)",
+                transform: [{ scale: pulseAnim }],
               },
             ]}
           >
@@ -114,7 +132,7 @@ export default function GeneratingScreen() {
               size={48}
               color={isLight ? "#007725" : Colors.primaryLight}
             />
-          </View>
+          </Animated.View>
         </View>
 
         <Text style={[styles.title, { color: Colors.text }]}>
@@ -155,14 +173,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   title: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: "900",
     marginBottom: 12,
     textAlign: "center",
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 16,
     fontWeight: "500",
     textAlign: "center",
+    opacity: 0.8,
   },
 });
