@@ -12,6 +12,12 @@ import { LinearGradient } from "expo-linear-gradient";
 import { type Href, Link, useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import {
+  GREEN_ON_LIGHT,
+  GREEN_SOLID,
+  screenGradientColors,
+  SCREEN_GRADIENT_LOCATIONS,
+} from "@/constants/brand";
 import { useThemeStore } from "@/store/theme-store";
 import { useAuthStore } from "@/store/auth-store";
 import { Input } from "@/components/ui/input";
@@ -142,15 +148,12 @@ export default function LoginScreen() {
 
   const isLight = activeTheme === "light";
 
-  const gradientColors = isLight
-    ? (["#E0FDD2", "#FFFFFF", "#FFFFFF"] as const)
-    : (["#0B2E1F", "#0A0A0A", "#0A0A0A"] as const);
-  const gradientLocations = [0, 0.4, 1] as const;
+  const gradientColors = screenGradientColors(isLight);
 
   return (
     <LinearGradient
       colors={[...gradientColors]}
-      locations={[...gradientLocations]}
+      locations={[...SCREEN_GRADIENT_LOCATIONS]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
       style={[
@@ -178,7 +181,12 @@ export default function LoginScreen() {
           <Text style={[styles.title, { color: Colors.text }]}>
             {isLogin ? "Welcome Back" : "Sign Up"}
           </Text>
-          <Text style={[styles.subtitle, { color: Colors.textSecondary }]}>
+          <Text
+            style={[
+              styles.subtitle,
+              { color: isLight ? "#000000" : Colors.text },
+            ]}
+          >
             {isLogin ? "Sign in to continue" : "Create account to continue"}
           </Text>
         </View>
@@ -232,7 +240,7 @@ export default function LoginScreen() {
                   style={[
                     styles.forgotPasswordText,
                     {
-                      color: isLight ? "#007725" : Colors.primaryLight,
+                      color: isLight ? GREEN_ON_LIGHT : GREEN_SOLID,
                     },
                   ]}
                 >
@@ -259,7 +267,7 @@ export default function LoginScreen() {
             <Ion
               name={agreeTerms ? "checkbox" : "square-outline"}
               size={22}
-              color={agreeTerms ? Colors.primary : Colors.error}
+              color={agreeTerms ? GREEN_SOLID : Colors.error}
               style={styles.checkboxIcon}
             />
             <Text style={[styles.termsText, { color: Colors.textSecondary }]}>
@@ -296,18 +304,20 @@ export default function LoginScreen() {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[
-              styles.socialButton,
-              { backgroundColor: Colors.card, borderColor: Colors.border },
-            ]}
-            activeOpacity={0.8}
-          >
-            <AppleLogo size={22} color={Colors.text} />
-            <Text style={[styles.socialButtonText, { color: Colors.text }]}>
-              Continue with Apple
-            </Text>
-          </TouchableOpacity>
+          {Platform.OS === "ios" ? (
+            <TouchableOpacity
+              style={[
+                styles.socialButton,
+                { backgroundColor: Colors.card, borderColor: Colors.border },
+              ]}
+              activeOpacity={0.8}
+            >
+              <AppleLogo size={22} color={Colors.text} />
+              <Text style={[styles.socialButtonText, { color: Colors.text }]}>
+                Continue with Apple
+              </Text>
+            </TouchableOpacity>
+          ) : null}
 
           <View style={styles.switchModeContainer}>
             <Text style={[styles.switchModeText, { color: Colors.textSecondary }]}>
@@ -317,7 +327,7 @@ export default function LoginScreen() {
               <Text
                 style={[
                   styles.switchModeLink,
-                  { color: isLight ? "#007725" : Colors.primaryLight },
+                  { color: isLight ? GREEN_ON_LIGHT : GREEN_SOLID },
                 ]}
               >
                 {isLogin ? "Sign Up" : "Sign in"}
@@ -369,6 +379,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     fontWeight: "500",
+    textAlign: "center",
   },
   errorBanner: {
     backgroundColor: "rgba(231, 76, 60, 0.1)",

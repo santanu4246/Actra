@@ -8,6 +8,7 @@ import React, { useCallback, useState } from "react";
 import {
   Dimensions,
   FlatList,
+  Image,
   ListRenderItemInfo,
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -19,40 +20,73 @@ import {
   View,
 } from "react-native";
 import {
+  GREEN_ALPHA,
+  GREEN_ALPHA_MEDIUM,
+  GREEN_ALPHA_SOFT,
+  GREEN_ON_LIGHT,
+  GREEN_SOLID,
+  GREEN_TINT_LIGHT,
+  screenGradientColors,
+  SCREEN_GRADIENT_LOCATIONS,
+} from "@/constants/brand";
+import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
 
-const slides = [
+const WELCOME_IMAGES = {
+  img1: require("../../assets/welcomScreen/img1.png"),
+  img2: require("../../assets/welcomScreen/img2.png"),
+  img3: require("../../assets/welcomScreen/img3.png"),
+} as const;
+
+type WelcomeSlideCopy = {
+  id: string;
+  badgeText: string;
+  headline: string;
+  subtext: string;
+};
+
+type Slide =
+  | (WelcomeSlideCopy & {
+      widget: "welcomeImage";
+      imageKey: keyof typeof WELCOME_IMAGES;
+    })
+  | (WelcomeSlideCopy & {
+      widget: "goalSetup" | "tasks" | "remind";
+    });
+
+const slides: Slide[] = [
   {
     id: "1",
-    badgeText: "Goal setup",
-    headline: "Turn any skill into a daily plan",
+    badgeText: "Reminders",
+    headline: "Timely pings so learning never fades",
     subtext:
-      "Pick a topic, how much time you have, and when you learn best — morning, midday, or evening.",
-    widget: "goalSetup",
+      "Choose your skill, how long you practice, and the part of day that suits you best. Alerts show the precise next step so nothing stays vague.",
+    widget: "welcomeImage" as const,
+    imageKey: "img1" as const,
   },
   {
     id: "2",
-    badgeText: "AI tasks",
-    headline: "Small tasks today, big progress tomorrow",
+    badgeText: "Focus",
+    headline: "A short list that earns your attention",
     subtext:
-      "Each day you get 3–4 concrete steps sized for your schedule — no more staring at a vague syllabus.",
-    widget: "tasks",
+      "Each day brings 3 to 4 scoped moves aligned with how you actually work. Narrow focus beats juggling everything at once and keeps traction honest.",
+    widget: "welcomeImage" as const,
+    imageKey: "img2" as const,
   },
   {
     id: "3",
-    badgeText: "Consistency",
-    headline: "Reminders that fit your rhythm",
+    badgeText: "Victory",
+    headline: "Progress big enough for a trophy moment",
     subtext:
-      "Get nudges at your preferred time, mark tasks done or skipped, and wake up to a fresh plan every day.",
-    widget: "remind",
+      "Celebrate real finishes, move on when you skip, and wake to a fresh plan. Confidence grows when every small win stays visible.",
+    widget: "welcomeImage" as const,
+    imageKey: "img3" as const,
   },
 ];
-
-type Slide = (typeof slides)[number];
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -80,10 +114,7 @@ export default function WelcomeScreen() {
     }
   };
 
-  const gradientColors = isLight
-    ? (["#E0FDD2", "#FFFFFF", "#FFFFFF"] as const)
-    : (["#0B2E1F", "#0A0A0A", "#0A0A0A"] as const);
-  const gradientLocations = [0, 0.4, 1] as const;
+  const gradientColors = screenGradientColors(isLight);
 
   const cardSurface = (light: boolean) =>
     ({
@@ -98,8 +129,20 @@ export default function WelcomeScreen() {
         : "rgba(255,255,255,0.05)",
     }) as const;
 
-  const renderWidget = (widgetType: string, light: boolean) => {
-    switch (widgetType) {
+  const renderWidget = (item: Slide, light: boolean) => {
+    switch (item.widget) {
+      case "welcomeImage": {
+        const source = WELCOME_IMAGES[item.imageKey];
+        return (
+          <View style={styles.welcomeImageWrap}>
+            <Image
+              source={source}
+              style={styles.welcomeImage}
+              resizeMode="contain"
+            />
+          </View>
+        );
+      }
       case "goalSetup":
         return (
           <View style={[styles.widgetCard, cardSurface(light)]}>
@@ -110,15 +153,15 @@ export default function WelcomeScreen() {
                     styles.widgetIconBg,
                     {
                       backgroundColor: light
-                        ? "#E7FFC6"
-                        : "rgba(16, 185, 129, 0.15)",
+                        ? GREEN_TINT_LIGHT
+                        : GREEN_ALPHA,
                     },
                   ]}
                 >
                   <Ion
                     name="flag"
                     size={24}
-                    color={light ? "#007725" : Colors.primaryLight}
+                    color={light ? GREEN_ON_LIGHT : GREEN_SOLID}
                   />
                 </View>
                 <Text
@@ -150,12 +193,12 @@ export default function WelcomeScreen() {
                 <Ion
                   name="time-outline"
                   size={16}
-                  color={light ? "#007725" : Colors.primary}
+                  color={GREEN_SOLID}
                 />
                 <Text
                   style={[
                     styles.metaChipText,
-                    { color: light ? "#007725" : Colors.primary },
+                    { color: GREEN_SOLID },
                   ]}
                 >
                   60 min / day
@@ -224,11 +267,7 @@ export default function WelcomeScreen() {
                     {
                       borderColor: light ? "#D0D0D0" : Colors.border,
                       backgroundColor:
-                        i === 0
-                          ? light
-                            ? "#007725"
-                            : Colors.primary
-                          : "transparent",
+                        i === 0 ? GREEN_SOLID : "transparent",
                     },
                   ]}
                 >
@@ -266,8 +305,8 @@ export default function WelcomeScreen() {
                   styles.widgetIconBg,
                   {
                     backgroundColor: light
-                      ? "#E7FFC6"
-                      : "rgba(16, 185, 129, 0.15)",
+                      ? GREEN_TINT_LIGHT
+                      : GREEN_ALPHA,
                     borderRadius: 14,
                     width: 48,
                     height: 48,
@@ -277,7 +316,7 @@ export default function WelcomeScreen() {
                 <Ion
                   name="notifications"
                   size={24}
-                  color={light ? "#007725" : Colors.primaryLight}
+                  color={light ? GREEN_ON_LIGHT : GREEN_SOLID}
                 />
               </View>
               <View style={{ flex: 1 }}>
@@ -331,7 +370,7 @@ export default function WelcomeScreen() {
               <Ion
                 name="git-branch-outline"
                 size={18}
-                color={light ? "#007725" : Colors.primary}
+                color={GREEN_SOLID}
               />
               <Text
                 style={[
@@ -352,7 +391,7 @@ export default function WelcomeScreen() {
   const renderItem = ({ item }: ListRenderItemInfo<Slide>) => (
     <View style={styles.slideContainer}>
       <View style={styles.widgetContainer}>
-        {renderWidget(item.widget, isLight)}
+        {renderWidget(item, isLight)}
       </View>
       <View style={styles.contentContainer}>
         <View
@@ -361,7 +400,7 @@ export default function WelcomeScreen() {
           <Text
             style={[
               styles.badgeText,
-              { color: isLight ? "#007725" : Colors.primaryLight },
+              { color: isLight ? GREEN_ON_LIGHT : GREEN_SOLID },
             ]}
           >
             {item.badgeText}
@@ -396,7 +435,7 @@ export default function WelcomeScreen() {
   return (
     <LinearGradient
       colors={[...gradientColors]}
-      locations={[...gradientLocations]}
+      locations={[...SCREEN_GRADIENT_LOCATIONS]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
       style={styles.gradientRoot}
@@ -451,7 +490,7 @@ export default function WelcomeScreen() {
                   index === activeIndex && [
                     styles.activeDot,
                     {
-                      backgroundColor: isLight ? "#333333" : Colors.primary,
+                      backgroundColor: GREEN_SOLID,
                     },
                   ],
                 ]}
@@ -551,6 +590,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 40,
   },
+  welcomeImageWrap: {
+    flex: 1,
+    width: width - 48,
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: 340,
+  },
+  welcomeImage: {
+    width: "100%",
+    height: 400,
+  },
   widgetCard: {
     width: width - 48,
     borderRadius: 28,
@@ -595,7 +645,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 100,
     gap: 6,
-    backgroundColor: "rgba(16, 185, 129, 0.08)",
+    backgroundColor: GREEN_ALPHA_SOFT,
   },
   metaChipText: {
     fontSize: 14,
@@ -661,10 +711,10 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   badgeLight: {
-    backgroundColor: "#E7FFC6",
+    backgroundColor: GREEN_TINT_LIGHT,
   },
   badgeDark: {
-    backgroundColor: "rgba(16, 185, 129, 0.2)",
+    backgroundColor: GREEN_ALPHA_MEDIUM,
   },
   badgeText: {
     fontWeight: "600",
