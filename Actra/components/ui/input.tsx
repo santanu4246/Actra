@@ -14,12 +14,14 @@ export type InputProps = TextInputProps & {
   label: string;
   error?: string;
   isPassword?: boolean;
+  compact?: boolean;
 };
 
 export function Input({
   label,
   error,
   isPassword,
+  compact,
   style,
   ...props
 }: InputProps) {
@@ -27,11 +29,20 @@ export function Input({
   const [hidden, setHidden] = useState(true);
 
   return (
-    <View style={styles.wrap}>
-      <Text style={[styles.label, { color: Colors.text }]}>{label}</Text>
+    <View style={[styles.wrap, compact && styles.wrapCompact]}>
+      <Text
+        style={[
+          styles.label,
+          compact && styles.labelCompact,
+          { color: Colors.text },
+        ]}
+      >
+        {label}
+      </Text>
       <View
         style={[
           styles.fieldRow,
+          compact && styles.fieldRowCompact,
           {
             borderColor: error ? Colors.error : Colors.border,
             backgroundColor: Colors.card,
@@ -40,7 +51,12 @@ export function Input({
       >
         <TextInput
           {...props}
-          style={[styles.input, { color: Colors.text }, style]}
+          style={[
+            styles.input,
+            compact && styles.inputCompact,
+            { color: Colors.text },
+            style,
+          ]}
           placeholderTextColor={Colors.textSecondary}
           secureTextEntry={isPassword ? hidden : props.secureTextEntry}
         />
@@ -95,5 +111,20 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontSize: 12,
     fontWeight: "500",
+  },
+  wrapCompact: {
+    marginBottom: 12,
+  },
+  labelCompact: {
+    marginBottom: 5,
+  },
+  fieldRowCompact: {
+    minHeight: 46,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+  },
+  inputCompact: {
+    paddingVertical: 9,
+    fontSize: 15,
   },
 });

@@ -207,6 +207,7 @@ export default function LoginScreen() {
             autoCapitalize="none"
             autoComplete="email"
             error={errors.email}
+            compact
           />
 
           {!isLogin ? (
@@ -217,6 +218,7 @@ export default function LoginScreen() {
               onChangeText={(value) => handleFieldChange("fullName", value)}
               autoCapitalize="words"
               error={errors.fullName}
+              compact
             />
           ) : null}
 
@@ -227,6 +229,7 @@ export default function LoginScreen() {
             onChangeText={(value) => handleFieldChange("password", value)}
             isPassword
             error={errors.password}
+            compact
           />
 
           {isLogin ? (
@@ -249,7 +252,7 @@ export default function LoginScreen() {
               </TouchableOpacity>
             </Link>
           ) : (
-            <View style={{ height: 8 }} />
+            <View style={{ height: 4 }} />
           )}
 
           <Button
@@ -364,17 +367,17 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingVertical: 10,
   },
   header: {
     alignItems: "center",
-    marginTop: 20,
-    marginBottom: 40,
+    marginTop: 8,
+    marginBottom: 20,
   },
   title: {
     fontSize: 28,
     fontWeight: "900",
-    marginBottom: 8,
+    marginBottom: 4,
   },
   subtitle: {
     fontSize: 16,
@@ -386,8 +389,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(231, 76, 60, 0.3)",
     borderRadius: 12,
-    padding: 12,
-    marginBottom: 20,
+    padding: 10,
+    marginBottom: 14,
   },
   errorBannerText: {
     color: "#E74C3C",
@@ -396,12 +399,12 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   formContainer: {
-    marginTop: 8,
+    marginTop: 0,
   },
   forgotPassword: {
     alignSelf: "flex-end",
-    marginBottom: 24,
-    marginTop: -8,
+    marginBottom: 14,
+    marginTop: -4,
   },
   forgotPasswordText: {
     fontSize: 14,
@@ -409,12 +412,12 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
   },
   actionButton: {
-    marginBottom: 24,
+    marginBottom: 14,
   },
   termsContainer: {
     flexDirection: "row",
     alignItems: "flex-start",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   checkboxIcon: {
     marginRight: 10,
@@ -432,13 +435,13 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 12,
     marginTop: -4,
-    marginBottom: 16,
+    marginBottom: 10,
     marginLeft: 32,
   },
   dividerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 32,
+    marginVertical: 18,
   },
   divider: {
     flex: 1,
@@ -452,9 +455,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    height: 56,
+    height: 52,
     borderRadius: 28,
-    marginBottom: 16,
+    marginBottom: 10,
     borderWidth: 1,
   },
   socialButtonText: {
@@ -466,8 +469,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 16,
-    marginBottom: 20,
+    marginTop: 8,
+    marginBottom: 12,
   },
   switchModeText: {
     fontSize: 15,
@@ -481,8 +484,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 20,
-    marginBottom: 40,
+    marginTop: 10,
+    marginBottom: 28,
   },
   footerLink: {
     fontSize: 13,
