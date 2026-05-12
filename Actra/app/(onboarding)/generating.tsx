@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
 import { Ion } from "@/components/ui/icon";
-import { screenGradientColors, SCREEN_GRADIENT_LOCATIONS } from "@/constants/brand";
+import { screenGradientColors, ONBOARDING_GRADIENT_LOCATIONS } from "@/constants/brand";
 
 const GENERATING_STEPS = [
   "Analyzing your goal...",
@@ -96,7 +96,7 @@ export default function GeneratingScreen() {
   return (
     <LinearGradient
       colors={[...gradientColors]}
-      locations={[...SCREEN_GRADIENT_LOCATIONS]}
+      locations={[...ONBOARDING_GRADIENT_LOCATIONS]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
       style={[

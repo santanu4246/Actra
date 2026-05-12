@@ -18,7 +18,7 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
 import { Button } from "@/components/ui/button";
 import { Ion } from "@/components/ui/icon";
-import { screenGradientColors, SCREEN_GRADIENT_LOCATIONS } from "@/constants/brand";
+import { screenGradientColors, ONBOARDING_GRADIENT_LOCATIONS } from "@/constants/brand";
 
 type TaskSource = "generated" | "manual";
 
@@ -156,7 +156,7 @@ export default function ReviewTasksScreen() {
   return (
     <LinearGradient
       colors={[...gradientColors]}
-      locations={[...SCREEN_GRADIENT_LOCATIONS]}
+      locations={[...ONBOARDING_GRADIENT_LOCATIONS]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
       style={[

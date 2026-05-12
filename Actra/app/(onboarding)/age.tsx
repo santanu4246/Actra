@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { type Href, useLocalSearchParams, useRouter } from "expo-router";
+import { type Href, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
@@ -16,20 +16,21 @@ import { Button } from "@/components/ui/button";
 import { Ion } from "@/components/ui/icon";
 import { screenGradientColors, ONBOARDING_GRADIENT_LOCATIONS, SCREEN_GRADIENT_TOP } from "@/constants/brand";
 
-const FREQUENCIES = [
-  { id: "daily", label: "Daily" },
-  { id: "three_days", label: "3 days a week" },
-  { id: "weekend", label: "Weekend" },
+const AGE_GROUPS = [
+  { id: "18-24", label: "18-24" },
+  { id: "25-30", label: "25-30" },
+  { id: "31-36", label: "31-36" },
+  { id: "37-40", label: "37-40" },
+  { id: "40+", label: "40+" },
 ];
 
-export default function GoalFrequencyScreen() {
+export default function AgeScreen() {
   const router = useRouter();
-  const { age, topic, focus, difficulty, hours, minutes } = useLocalSearchParams<{ age: string, topic: string, focus: string, difficulty: string, hours: string, minutes: string }>();
   const Colors = useThemeColor();
   const { activeTheme } = useThemeStore();
   const insets = useSafeAreaInsets();
 
-  const [frequency, setFrequency] = useState<string>("");
+  const [age, setAge] = useState<string>("");
   const [loading, setLoading] = useState(false);
 
   const isLight = activeTheme === "light";
@@ -37,13 +38,8 @@ export default function GoalFrequencyScreen() {
   const gradientColors = screenGradientColors(isLight);
 
   const handleContinue = async () => {
-    if (!frequency || loading) return;
-    setLoading(true);
-    // Simulate saving all goal preferences
-    setTimeout(() => {
-      setLoading(false);
-      router.replace("/(onboarding)/generating" as Href);
-    }, 600);
+    if (!age || loading) return;
+    router.push({ pathname: "/(onboarding)/goal", params: { age } } as any);
   };
 
   const handleBack = () => {
@@ -74,23 +70,23 @@ export default function GoalFrequencyScreen() {
           <Ion name="chevron-back" size={28} color={Colors.text} />
         </TouchableOpacity>
         <View style={[styles.progressTrack, { backgroundColor: isLight ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)" }]}>
-          <View style={[styles.progressFill, { width: "100%", backgroundColor: Colors.text }]} />
+          <View style={[styles.progressFill, { width: "16%", backgroundColor: Colors.text }]} />
         </View>
       </View>
       <View style={styles.container}>
         <View style={styles.scrollContent}>
           <View style={styles.header}>
             <Text style={[styles.title, { color: Colors.text }]}>
-              How often do you want to practice?
+              What is your age?
             </Text>
           </View>
 
           <View style={styles.formContainer}>
-            {FREQUENCIES.map((freq) => {
-              const isSelected = frequency === freq.id;
+            {AGE_GROUPS.map((group) => {
+              const isSelected = age === group.id;
               return (
                 <TouchableOpacity
-                  key={freq.id}
+                  key={group.id}
                   style={[
                     styles.optionCard,
                     {
@@ -103,7 +99,7 @@ export default function GoalFrequencyScreen() {
                       overflow: "hidden",
                     },
                   ]}
-                  onPress={() => setFrequency(freq.id)}
+                  onPress={() => setAge(group.id)}
                   activeOpacity={0.7}
                 >
                   {isSelected && <View style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, backgroundColor: "rgba(255, 255, 255, 0.25)", pointerEvents: "none" }} />}
@@ -112,33 +108,12 @@ export default function GoalFrequencyScreen() {
                       styles.optionText,
                       {
                         color: isSelected ? "#FFFFFF" : Colors.text,
-                        fontWeight: "500",
+                        fontWeight: isSelected ? "700" : "500",
                       },
                     ]}
                   >
-                    {freq.label}
+                    {group.label}
                   </Text>
-                  <View
-                    style={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: 12,
-                      backgroundColor: isSelected ? "rgba(255, 255, 255, 0.2)" : (isLight ? "#E5E5EA" : "rgba(255,255,255,0.1)"),
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    {isSelected && (
-                      <View
-                        style={{
-                          width: 12,
-                          height: 12,
-                          borderRadius: 6,
-                          backgroundColor: "#FFFFFF",
-                        }}
-                      />
-                    )}
-                  </View>
                 </TouchableOpacity>
               );
             })}
@@ -149,7 +124,7 @@ export default function GoalFrequencyScreen() {
               title="Continue"
               onPress={handleContinue}
               loading={loading}
-              style={{ ...styles.actionButton, opacity: !frequency ? 0.5 : 1 }}
+              style={{ ...styles.actionButton, opacity: !age ? 0.5 : 1 }}
             />
           </View>
         </View>

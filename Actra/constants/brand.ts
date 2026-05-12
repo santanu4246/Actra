@@ -4,6 +4,9 @@ export const SCREEN_GRADIENT_TOP = "#086376";
 /** Stop locations shared by auth / welcome backgrounds */
 export const SCREEN_GRADIENT_LOCATIONS = [0, 0.4, 1] as const;
 
+/** Stop locations for onboarding screens to reduce top gradient height */
+export const ONBOARDING_GRADIENT_LOCATIONS = [0, 0.2, 1] as const;
+
 export type ScreenGradientColors = readonly [string, string, string];
 
 export function screenGradientColors(isLight: boolean): ScreenGradientColors {

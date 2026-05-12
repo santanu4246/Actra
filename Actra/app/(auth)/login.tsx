@@ -130,7 +130,7 @@ export default function LoginScreen() {
         if (isLogin) {
           router.replace("/(tabs)/home" as Href);
         } else {
-          router.replace("/(onboarding)/goal" as Href);
+          router.replace("/(onboarding)/age" as Href);
         }
       }
     } catch (error) {

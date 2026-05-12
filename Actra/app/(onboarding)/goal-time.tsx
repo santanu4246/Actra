@@ -17,7 +17,7 @@ import { useThemeStore } from "@/store/theme-store";
 import * as Haptics from "expo-haptics";
 import { Button } from "@/components/ui/button";
 import { Ion } from "@/components/ui/icon";
-import { screenGradientColors, SCREEN_GRADIENT_LOCATIONS } from "@/constants/brand";
+import { screenGradientColors, ONBOARDING_GRADIENT_LOCATIONS } from "@/constants/brand";
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
@@ -152,7 +152,7 @@ function WheelColumn({ data, value, onChange }: { data: {label: string, value: a
 
 export default function GoalTimeScreen() {
   const router = useRouter();
-  const { topic } = useLocalSearchParams<{ topic: string }>();
+  const { age, topic, focus, difficulty } = useLocalSearchParams<{ age: string, topic: string, focus: string, difficulty: string }>();
   const Colors = useThemeColor();
   const { activeTheme } = useThemeStore();
   const insets = useSafeAreaInsets();
@@ -173,7 +173,7 @@ export default function GoalTimeScreen() {
     // Simulate saving goal & time preferences
     setTimeout(() => {
       setLoading(false);
-      router.push({ pathname: "/(onboarding)/goal-frequency", params: { topic, hours, minutes } } as any);
+      router.push({ pathname: "/(onboarding)/goal-frequency", params: { age, topic, focus, difficulty, hours, minutes } } as any);
     }, 150);
   };
 
@@ -184,7 +184,7 @@ export default function GoalTimeScreen() {
   return (
     <LinearGradient
       colors={[...gradientColors]}
-      locations={[...SCREEN_GRADIENT_LOCATIONS]}
+      locations={[...ONBOARDING_GRADIENT_LOCATIONS]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
       style={[
@@ -205,7 +205,7 @@ export default function GoalTimeScreen() {
           <Ion name="chevron-back" size={28} color={Colors.text} />
         </TouchableOpacity>
         <View style={[styles.progressTrack, { backgroundColor: isLight ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)" }]}>
-          <View style={[styles.progressFill, { width: "66%", backgroundColor: Colors.text }]} />
+          <View style={[styles.progressFill, { width: "83%", backgroundColor: Colors.text }]} />
         </View>
       </View>
       <View style={styles.container}>
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 24,
     paddingTop: 8,
-    // paddingBottom: 8,
+    paddingBottom: 8,
   },
   backButton: {
     marginRight: 16,
@@ -282,7 +282,6 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "flex-start",
-    // marginTop: 8,
     marginBottom: 32,
   },
   title: {

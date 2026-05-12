@@ -9,17 +9,18 @@ import {
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { LinearGradient } from "expo-linear-gradient";
-import { type Href, useRouter } from "expo-router";
+import { type Href, useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Ion } from "@/components/ui/icon";
-import { screenGradientColors, SCREEN_GRADIENT_LOCATIONS } from "@/constants/brand";
+import { screenGradientColors, ONBOARDING_GRADIENT_LOCATIONS } from "@/constants/brand";
 
 export default function GoalSetupScreen() {
   const router = useRouter();
+  const { age } = useLocalSearchParams<{ age: string }>();
   const Colors = useThemeColor();
   const { activeTheme } = useThemeStore();
   const insets = useSafeAreaInsets();
@@ -32,13 +33,13 @@ export default function GoalSetupScreen() {
 
   const handleContinue = () => {
     if (!topic.trim()) return;
-    router.push({ pathname: "/(onboarding)/goal-time", params: { topic } } as any);
+    router.push({ pathname: "/(onboarding)/focus", params: { age, topic } } as any);
   };
 
   return (
     <LinearGradient
       colors={[...gradientColors]}
-      locations={[...SCREEN_GRADIENT_LOCATIONS]}
+      locations={[...ONBOARDING_GRADIENT_LOCATIONS]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
       style={[
@@ -91,10 +92,7 @@ export default function GoalSetupScreen() {
           <Button
             title="Continue"
             onPress={handleContinue}
-            style={[
-              styles.actionButton,
-              { opacity: !topic.trim() ? 0.5 : 1 },
-            ]}
+            style={{ ...styles.actionButton, opacity: !topic.trim() ? 0.5 : 1 }}
           />
         </View>
       </KeyboardAwareScrollView>
@@ -111,7 +109,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 24,
     paddingTop: 8,
-    paddingBottom: 0,
+    paddingBottom: 8,
   },
   backButton: {
     marginRight: 16,
@@ -138,7 +136,6 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "flex-start",
-    marginTop: 0,
     marginBottom: 32,
   },
   title: {
