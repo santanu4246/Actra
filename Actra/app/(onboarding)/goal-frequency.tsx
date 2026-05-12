@@ -111,7 +111,7 @@ export default function GoalFrequencyScreen() {
                     style={[
                       styles.optionText,
                       {
-                        color: isSelected ? "#FFFFFF" : Colors.text,
+                        color: isSelected ? "#000000" : Colors.text,
                         fontWeight: "500",
                       },
                     ]}
