@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Platform,
   StatusBar,
@@ -6,29 +6,149 @@ import {
   Text,
   TouchableOpacity,
   View,
+  FlatList,
+  Animated,
 } from "react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { LinearGradient } from "expo-linear-gradient";
 import { type Href, useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
+import * as Haptics from "expo-haptics";
 import { Button } from "@/components/ui/button";
 import { Ion } from "@/components/ui/icon";
 import { screenGradientColors, SCREEN_GRADIENT_LOCATIONS } from "@/constants/brand";
 
-const DAILY_TIMES = [
-  { label: "15m", value: 15 },
-  { label: "30m", value: 30 },
-  { label: "60m", value: 60 },
-  { label: "120m", value: 120 },
-];
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
-const PREFERRED_TIMES = [
-  { label: "Morning", value: "morning", icon: "partly-sunny-outline" },
-  { label: "Midday", value: "midday", icon: "sunny-outline" },
-  { label: "Evening", value: "evening", icon: "moon-outline" },
-];
+const ITEM_HEIGHT = 50;
+const HOURS = Array.from({ length: 13 }, (_, i) => ({ label: `${i} hr`, value: i }));
+const MINUTES = Array.from({ length: 12 }, (_, i) => ({ label: `${i * 5} min`, value: i * 5 }));
+
+function WheelColumn({ data, value, onChange }: { data: {label: string, value: any}[], value: any, onChange: (v: any) => void }) {
+  const isLight = useThemeStore().activeTheme === "light";
+  const Colors = useThemeColor();
+  const flatListRef = useRef<any>(null);
+  
+  const initialIndex = Math.max(0, data.findIndex(d => d.value === value));
+  
+  const scrollY = useRef(new Animated.Value(initialIndex * ITEM_HEIGHT)).current;
+  
+  const paddedData = [
+    { value: 'pad1', label: '' },
+    { value: 'pad2', label: '' },
+    ...data,
+    { value: 'pad3', label: '' },
+    { value: 'pad4', label: '' },
+  ];
+
+  useEffect(() => {
+    let lastIndex = initialIndex;
+    const id = scrollY.addListener(({ value }) => {
+      const index = Math.round(value / ITEM_HEIGHT);
+      if (index !== lastIndex && index >= 0 && index < data.length) {
+        lastIndex = index;
+        Haptics.selectionAsync().catch(() => {});
+      }
+    });
+    return () => scrollY.removeListener(id);
+  }, [data.length]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      flatListRef.current?.scrollToOffset({ offset: initialIndex * ITEM_HEIGHT, animated: false });
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [initialIndex]);
+
+  const handleMomentumScrollEnd = (event: any) => {
+    const y = event.nativeEvent.contentOffset.y;
+    const index = Math.round(y / ITEM_HEIGHT);
+    if (index >= 0 && index < data.length) {
+      onChange(data[index].value);
+    }
+  };
+
+  const handleScrollEndDrag = (event: any) => {
+    const y = event.nativeEvent.contentOffset.y;
+    const index = Math.round(y / ITEM_HEIGHT);
+    if (index >= 0 && index < data.length) {
+      onChange(data[index].value);
+    }
+  };
+
+  return (
+    <View style={{ height: ITEM_HEIGHT * 5, flex: 1, alignItems: 'center' }}>
+      <AnimatedFlatList
+        ref={flatListRef}
+        data={paddedData}
+        keyExtractor={(item: any, idx: number) => item.value.toString() + idx}
+        showsVerticalScrollIndicator={false}
+        snapToInterval={ITEM_HEIGHT}
+        decelerationRate="fast"
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
+        )}
+        onMomentumScrollEnd={handleMomentumScrollEnd}
+        onScrollEndDrag={handleScrollEndDrag}
+        scrollEventThrottle={16}
+        getItemLayout={(_: any, index: number) => ({ length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index })}
+        renderItem={({ item, index }: any) => {
+          const isPadding = item.value.toString().startsWith('pad');
+          if (isPadding) {
+             return <View style={{ height: ITEM_HEIGHT }} />;
+          }
+
+          const centerScrollY = (index - 2) * ITEM_HEIGHT;
+          const inputRange = [
+            centerScrollY - 2 * ITEM_HEIGHT,
+            centerScrollY - 1 * ITEM_HEIGHT,
+            centerScrollY,
+            centerScrollY + 1 * ITEM_HEIGHT,
+            centerScrollY + 2 * ITEM_HEIGHT,
+          ];
+
+          const rotateX = scrollY.interpolate({
+            inputRange,
+            outputRange: ['-50deg', '-25deg', '0deg', '25deg', '50deg'],
+            extrapolate: 'clamp',
+          });
+
+          const scale = scrollY.interpolate({
+            inputRange,
+            outputRange: [0.75, 0.85, 1.05, 0.85, 0.75],
+            extrapolate: 'clamp',
+          });
+
+          const opacity = scrollY.interpolate({
+            inputRange,
+            outputRange: [0.2, 0.4, 1, 0.4, 0.2],
+            extrapolate: 'clamp',
+          });
+
+          return (
+            <Animated.View style={{ 
+              height: ITEM_HEIGHT, 
+              justifyContent: 'center', 
+              alignItems: 'center',
+              opacity,
+              transform: [{ perspective: 600 }, { rotateX }, { scale }]
+            }}>
+              <Text style={{ 
+                fontSize: 24, 
+                fontWeight: '500',
+                color: Colors.text,
+              }}>
+                {item.label}
+              </Text>
+            </Animated.View>
+          );
+        }}
+      />
+    </View>
+  );
+}
 
 export default function GoalTimeScreen() {
   const router = useRouter();
@@ -37,21 +157,24 @@ export default function GoalTimeScreen() {
   const { activeTheme } = useThemeStore();
   const insets = useSafeAreaInsets();
 
-  const [dailyTime, setDailyTime] = useState<number>(60);
-  const [preferredTime, setPreferredTime] = useState<string>("evening");
+  const [hours, setHours] = useState(1);
+  const [minutes, setMinutes] = useState(0);
   const [loading, setLoading] = useState(false);
 
   const isLight = activeTheme === "light";
 
   const gradientColors = screenGradientColors(isLight);
 
+  const isTimeUnset = hours === 0 && minutes === 0;
+
   const handleContinue = async () => {
+    if (isTimeUnset || loading) return;
     setLoading(true);
     // Simulate saving goal & time preferences
     setTimeout(() => {
       setLoading(false);
-      router.replace("/(onboarding)/generating" as Href);
-    }, 600);
+      router.push({ pathname: "/(onboarding)/goal-frequency", params: { topic, hours, minutes } } as any);
+    }, 150);
   };
 
   const handleBack = () => {
@@ -82,146 +205,43 @@ export default function GoalTimeScreen() {
           <Ion name="chevron-back" size={28} color={Colors.text} />
         </TouchableOpacity>
         <View style={[styles.progressTrack, { backgroundColor: isLight ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)" }]}>
-          <View style={[styles.progressFill, { width: "100%", backgroundColor: Colors.text }]} />
+          <View style={[styles.progressFill, { width: "66%", backgroundColor: Colors.text }]} />
         </View>
       </View>
-      <KeyboardAwareScrollView
-        style={styles.container}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        enableOnAndroid
-        extraScrollHeight={Platform.OS === "ios" ? 20 : 40}
-      >
-        <View style={styles.header}>
-          <Text style={[styles.title, { color: Colors.text }]}>
-            When works best for you?
-          </Text>
-        </View>
-
-        <View style={styles.formContainer}>
-          <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: Colors.text }]}>
-              Daily time commitment
+      <View style={styles.container}>
+        <View style={styles.scrollContent}>
+          <View style={styles.header}>
+            <Text style={[styles.title, { color: Colors.text }]}>
+              How much time do you want to give each day?
             </Text>
-            <View style={styles.pillsContainer}>
-              {DAILY_TIMES.map((time) => {
-                const isSelected = dailyTime === time.value;
-                return (
-                  <TouchableOpacity
-                    key={time.value}
-                    style={[
-                      styles.pill,
-                      {
-                        backgroundColor: isSelected
-                          ? isLight
-                            ? "#007725"
-                            : Colors.primary
-                          : isLight
-                          ? "#F0F0F0"
-                          : Colors.card,
-                        borderColor: isSelected
-                          ? isLight
-                            ? "#007725"
-                            : Colors.primary
-                          : Colors.border,
-                      },
-                    ]}
-                    onPress={() => setDailyTime(time.value)}
-                    activeOpacity={0.7}
-                  >
-                    <Text
-                      style={[
-                        styles.pillText,
-                        {
-                          color: isSelected
-                            ? "#FFFFFF"
-                            : Colors.textSecondary,
-                          fontWeight: isSelected ? "600" : "500",
-                        },
-                      ]}
-                    >
-                      {time.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
+          </View>
+
+          <View style={styles.formContainer}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', height: ITEM_HEIGHT * 5, width: '100%', position: 'relative' }}>
+              <View style={{
+                position: 'absolute',
+                top: ITEM_HEIGHT * 2,
+                height: ITEM_HEIGHT,
+                left: 20,
+                right: 20,
+                backgroundColor: isLight ? 'rgba(0,0,0,0.04)' : 'rgba(255,255,255,0.08)',
+                borderRadius: 12,
+              }} />
+              <WheelColumn data={HOURS} value={hours} onChange={setHours} />
+              <WheelColumn data={MINUTES} value={minutes} onChange={setMinutes} />
             </View>
           </View>
 
-          <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: Colors.text }]}>
-              Preferred time
-            </Text>
-            <View style={styles.timeCardsContainer}>
-              {PREFERRED_TIMES.map((time) => {
-                const isSelected = preferredTime === time.value;
-                return (
-                  <TouchableOpacity
-                    key={time.value}
-                    style={[
-                      styles.timeCard,
-                      {
-                        backgroundColor: isSelected
-                          ? isLight
-                            ? "#E7FFC6"
-                            : "rgba(16, 185, 129, 0.15)"
-                          : isLight
-                          ? "#FFFFFF"
-                          : Colors.card,
-                        borderColor: isSelected
-                          ? isLight
-                            ? "#007725"
-                            : Colors.primary
-                          : Colors.border,
-                      },
-                    ]}
-                    onPress={() => setPreferredTime(time.value)}
-                    activeOpacity={0.7}
-                  >
-                    <Ion
-                      name={time.icon as any}
-                      size={24}
-                      color={
-                        isSelected
-                          ? isLight
-                            ? "#007725"
-                            : Colors.primary
-                          : Colors.textSecondary
-                      }
-                      style={{ marginBottom: 8 }}
-                    />
-                    <Text
-                      style={[
-                        styles.timeCardText,
-                        {
-                          color: isSelected
-                            ? isLight
-                              ? "#007725"
-                              : Colors.primary
-                            : Colors.textSecondary,
-                          fontWeight: isSelected ? "600" : "500",
-                        },
-                      ]}
-                    >
-                      {time.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+          <View style={styles.footer}>
+            <Button
+              title="Continue"
+              onPress={handleContinue}
+              loading={loading}
+              style={{ ...styles.actionButton, opacity: isTimeUnset ? 0.5 : 1 }}
+            />
           </View>
         </View>
-
-        <View style={styles.footer}>
-          <Button
-            title="Continue"
-            onPress={handleContinue}
-            loading={loading}
-            style={styles.actionButton}
-          />
-        </View>
-      </KeyboardAwareScrollView>
+      </View>
     </LinearGradient>
   );
 }
@@ -235,7 +255,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 24,
     paddingTop: 8,
-    paddingBottom: 8,
+    // paddingBottom: 8,
   },
   backButton: {
     marginRight: 16,
@@ -255,18 +275,19 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    flexGrow: 1,
+    flex: 1,
     paddingHorizontal: 24,
-    paddingBottom: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
   },
   header: {
     alignItems: "flex-start",
-    marginTop: 8,
+    // marginTop: 8,
     marginBottom: 32,
   },
   title: {
-    fontSize: 32,
-    fontWeight: "800",
+    fontSize: 30,
+    fontWeight: "700",
     letterSpacing: -0.5,
   },
   formContainer: {
@@ -274,56 +295,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingBottom: 40,
   },
-  section: {
-    marginBottom: 24,
-  },
-  sectionLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 12,
-  },
-  pillsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-  },
-  pill: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 100,
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  pillText: {
-    fontSize: 15,
-  },
-  timeCardsContainer: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  timeCard: {
-    flex: 1,
-    paddingVertical: 18,
-    borderRadius: 20,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  timeCardText: {
-    fontSize: 14,
-  },
   footer: {
-    marginTop: 40,
-    marginBottom: 20,
+    marginTop: "auto",
+    marginBottom: 8,
   },
   actionButton: {
     width: "100%",

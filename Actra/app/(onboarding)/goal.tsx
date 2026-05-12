@@ -59,7 +59,7 @@ export default function GoalSetupScreen() {
           <Ion name="chevron-back" size={28} color={Colors.text} />
         </TouchableOpacity>
         <View style={[styles.progressTrack, { backgroundColor: isLight ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)" }]}>
-          <View style={[styles.progressFill, { width: "50%", backgroundColor: Colors.text }]} />
+          <View style={[styles.progressFill, { width: "33%", backgroundColor: Colors.text }]} />
         </View>
       </View>
       <KeyboardAwareScrollView
