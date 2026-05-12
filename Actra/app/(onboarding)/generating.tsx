@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
 import { Ion } from "@/components/ui/icon";
+import { screenGradientColors, SCREEN_GRADIENT_LOCATIONS } from "@/constants/brand";
 
 const GENERATING_STEPS = [
   "Analyzing your goal...",
@@ -33,10 +34,7 @@ export default function GeneratingScreen() {
 
   const isLight = activeTheme === "light";
 
-  const gradientColors = isLight
-    ? (["#E0FDD2", "#FFFFFF", "#FFFFFF"] as const)
-    : (["#0B2E1F", "#0A0A0A", "#0A0A0A"] as const);
-  const gradientLocations = [0, 0.4, 1] as const;
+  const gradientColors = screenGradientColors(isLight);
 
   useEffect(() => {
     // Fade in text
@@ -98,7 +96,7 @@ export default function GeneratingScreen() {
   return (
     <LinearGradient
       colors={[...gradientColors]}
-      locations={[...gradientLocations]}
+      locations={[...SCREEN_GRADIENT_LOCATIONS]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
       style={[

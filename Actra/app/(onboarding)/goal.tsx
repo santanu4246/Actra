@@ -16,19 +16,7 @@ import { useThemeStore } from "@/store/theme-store";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Ion } from "@/components/ui/icon";
-
-const DAILY_TIMES = [
-  { label: "15m", value: 15 },
-  { label: "30m", value: 30 },
-  { label: "60m", value: 60 },
-  { label: "120m", value: 120 },
-];
-
-const PREFERRED_TIMES = [
-  { label: "Morning", value: "morning", icon: "partly-sunny-outline" },
-  { label: "Midday", value: "midday", icon: "sunny-outline" },
-  { label: "Evening", value: "evening", icon: "moon-outline" },
-];
+import { screenGradientColors, SCREEN_GRADIENT_LOCATIONS } from "@/constants/brand";
 
 export default function GoalSetupScreen() {
   const router = useRouter();
@@ -37,32 +25,20 @@ export default function GoalSetupScreen() {
   const insets = useSafeAreaInsets();
 
   const [topic, setTopic] = useState("");
-  const [dailyTime, setDailyTime] = useState<number>(60);
-  const [preferredTime, setPreferredTime] = useState<string>("evening");
-  const [loading, setLoading] = useState(false);
 
   const isLight = activeTheme === "light";
 
-  const gradientColors = isLight
-    ? (["#E0FDD2", "#FFFFFF", "#FFFFFF"] as const)
-    : (["#0B2E1F", "#0A0A0A", "#0A0A0A"] as const);
-  const gradientLocations = [0, 0.4, 1] as const;
+  const gradientColors = screenGradientColors(isLight);
 
-  const handleContinue = async () => {
+  const handleContinue = () => {
     if (!topic.trim()) return;
-
-    setLoading(true);
-    // Simulate saving goal
-    setTimeout(() => {
-      setLoading(false);
-      router.replace("/(onboarding)/generating" as Href);
-    }, 600);
+    router.push({ pathname: "/(onboarding)/goal-time", params: { topic } } as any);
   };
 
   return (
     <LinearGradient
       colors={[...gradientColors]}
-      locations={[...gradientLocations]}
+      locations={[...SCREEN_GRADIENT_LOCATIONS]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
       style={[
@@ -78,6 +54,14 @@ export default function GoalSetupScreen() {
         backgroundColor="transparent"
         translucent
       />
+      <View style={styles.navHeader}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <Ion name="chevron-back" size={28} color={Colors.text} />
+        </TouchableOpacity>
+        <View style={[styles.progressTrack, { backgroundColor: isLight ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)" }]}>
+          <View style={[styles.progressFill, { width: "50%", backgroundColor: Colors.text }]} />
+        </View>
+      </View>
       <KeyboardAwareScrollView
         style={styles.container}
         contentContainerStyle={styles.scrollContent}
@@ -88,9 +72,6 @@ export default function GoalSetupScreen() {
       >
         <View style={styles.header}>
           <Text style={[styles.title, { color: Colors.text }]}>
-            Set your goal
-          </Text>
-          <Text style={[styles.subtitle, { color: Colors.textSecondary }]}>
             What do you want to learn?
           </Text>
         </View>
@@ -102,126 +83,14 @@ export default function GoalSetupScreen() {
             value={topic}
             onChangeText={setTopic}
             autoCapitalize="words"
+            style={{ textAlign: "center" }}
           />
-
-          <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: Colors.text }]}>
-              Daily time commitment
-            </Text>
-            <View style={styles.pillsContainer}>
-              {DAILY_TIMES.map((time) => {
-                const isSelected = dailyTime === time.value;
-                return (
-                  <TouchableOpacity
-                    key={time.value}
-                    style={[
-                      styles.pill,
-                      {
-                        backgroundColor: isSelected
-                          ? isLight
-                            ? "#007725"
-                            : Colors.primary
-                          : isLight
-                          ? "#F0F0F0"
-                          : Colors.card,
-                        borderColor: isSelected
-                          ? isLight
-                            ? "#007725"
-                            : Colors.primary
-                          : Colors.border,
-                      },
-                    ]}
-                    onPress={() => setDailyTime(time.value)}
-                    activeOpacity={0.7}
-                  >
-                    <Text
-                      style={[
-                        styles.pillText,
-                        {
-                          color: isSelected
-                            ? "#FFFFFF"
-                            : Colors.textSecondary,
-                          fontWeight: isSelected ? "600" : "500",
-                        },
-                      ]}
-                    >
-                      {time.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: Colors.text }]}>
-              Preferred time
-            </Text>
-            <View style={styles.timeCardsContainer}>
-              {PREFERRED_TIMES.map((time) => {
-                const isSelected = preferredTime === time.value;
-                return (
-                  <TouchableOpacity
-                    key={time.value}
-                    style={[
-                      styles.timeCard,
-                      {
-                        backgroundColor: isSelected
-                          ? isLight
-                            ? "#E7FFC6"
-                            : "rgba(16, 185, 129, 0.15)"
-                          : isLight
-                          ? "#FFFFFF"
-                          : Colors.card,
-                        borderColor: isSelected
-                          ? isLight
-                            ? "#007725"
-                            : Colors.primary
-                          : Colors.border,
-                      },
-                    ]}
-                    onPress={() => setPreferredTime(time.value)}
-                    activeOpacity={0.7}
-                  >
-                    <Ion
-                      name={time.icon as any}
-                      size={24}
-                      color={
-                        isSelected
-                          ? isLight
-                            ? "#007725"
-                            : Colors.primary
-                          : Colors.textSecondary
-                      }
-                      style={{ marginBottom: 8 }}
-                    />
-                    <Text
-                      style={[
-                        styles.timeCardText,
-                        {
-                          color: isSelected
-                            ? isLight
-                              ? "#007725"
-                              : Colors.primary
-                            : Colors.textSecondary,
-                          fontWeight: isSelected ? "600" : "500",
-                        },
-                      ]}
-                    >
-                      {time.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </View>
         </View>
 
         <View style={styles.footer}>
           <Button
             title="Continue"
             onPress={handleContinue}
-            loading={loading}
             style={[
               styles.actionButton,
               { opacity: !topic.trim() ? 0.5 : 1 },
@@ -237,83 +106,54 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
   },
+  navHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingTop: 8,
+    paddingBottom: 0,
+  },
+  backButton: {
+    marginRight: 16,
+    marginLeft: -8,
+  },
+  progressTrack: {
+    flex: 1,
+    height: 8,
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    borderRadius: 4,
+  },
   container: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
   },
   header: {
-    alignItems: "center",
-    marginTop: 20,
-    marginBottom: 40,
+    alignItems: "flex-start",
+    marginTop: 0,
+    marginBottom: 32,
   },
   title: {
-    fontSize: 32,
-    fontWeight: "900",
-    marginBottom: 8,
+    fontSize: 30,
+    fontWeight: "700",
     letterSpacing: -0.5,
-  },
-  subtitle: {
-    fontSize: 16,
-    fontWeight: "500",
-    opacity: 0.8,
   },
   formContainer: {
     flex: 1,
-  },
-  section: {
-    marginTop: 24,
-  },
-  sectionLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 12,
-  },
-  pillsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-  },
-  pill: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 100,
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  pillText: {
-    fontSize: 15,
-  },
-  timeCardsContainer: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  timeCard: {
-    flex: 1,
-    paddingVertical: 18,
-    borderRadius: 20,
-    borderWidth: 1,
-    alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  timeCardText: {
-    fontSize: 14,
+    paddingBottom: 40,
   },
   footer: {
-    marginTop: 40,
-    marginBottom: 20,
+    marginTop: "auto",
+    marginBottom: 8,
   },
   actionButton: {
     width: "100%",

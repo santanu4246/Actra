@@ -18,6 +18,7 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
 import { Button } from "@/components/ui/button";
 import { Ion } from "@/components/ui/icon";
+import { screenGradientColors, SCREEN_GRADIENT_LOCATIONS } from "@/constants/brand";
 
 type TaskSource = "generated" | "manual";
 
@@ -46,10 +47,7 @@ export default function ReviewTasksScreen() {
 
   const isLight = activeTheme === "light";
 
-  const gradientColors = isLight
-    ? (["#E0FDD2", "#FFFFFF", "#FFFFFF"] as const)
-    : (["#0B2E1F", "#0A0A0A", "#0A0A0A"] as const);
-  const gradientLocations = [0, 0.4, 1] as const;
+  const gradientColors = screenGradientColors(isLight);
 
   const removeTask = (id: string) => {
     setTasks((prev) => prev.filter((t) => t.id !== id));
@@ -158,7 +156,7 @@ export default function ReviewTasksScreen() {
   return (
     <LinearGradient
       colors={[...gradientColors]}
-      locations={[...gradientLocations]}
+      locations={[...SCREEN_GRADIENT_LOCATIONS]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
       style={[
