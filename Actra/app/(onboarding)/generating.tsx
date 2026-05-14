@@ -6,13 +6,13 @@ import {
   Text,
   View,
   Animated,
+  ActivityIndicator,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { type Href, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
-import { Ion } from "@/components/ui/icon";
 import { screenGradientColors, ONBOARDING_GRADIENT_LOCATIONS } from "@/constants/brand";
 
 const GENERATING_STEPS = [
@@ -29,8 +29,8 @@ export default function GeneratingScreen() {
   const insets = useSafeAreaInsets();
 
   const [stepIndex, setStepIndex] = useState(0);
+  const [percentage, setPercentage] = useState(0);
   const fadeAnim = useState(new Animated.Value(0))[0];
-  const pulseAnim = useState(new Animated.Value(1))[0];
 
   const isLight = activeTheme === "light";
 
@@ -43,22 +43,6 @@ export default function GeneratingScreen() {
       duration: 500,
       useNativeDriver: true,
     }).start();
-
-    // Pulse animation for the icon
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.15,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
 
     const interval = setInterval(() => {
       setStepIndex((prev) => {
@@ -83,13 +67,31 @@ export default function GeneratingScreen() {
       });
     }, 1500);
 
-    const timeout = setTimeout(() => {
+    const startTime = Date.now();
+    const duration = 6500;
+    
+    const progressInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      setPercentage(Math.round(t * 100));
+      if (t >= 1) {
+        clearInterval(progressInterval);
+      }
+    }, 50);
+
+    const completeTimeout = setTimeout(() => {
+      setPercentage(100);
+    }, duration);
+
+    const navTimeout = setTimeout(() => {
       router.replace("/(onboarding)/review" as Href);
-    }, 6500);
+    }, duration + 350);
 
     return () => {
       clearInterval(interval);
-      clearTimeout(timeout);
+      clearInterval(progressInterval);
+      clearTimeout(completeTimeout);
+      clearTimeout(navTimeout);
     };
   }, []);
 
@@ -113,38 +115,22 @@ export default function GeneratingScreen() {
         translucent
       />
       <View style={styles.container}>
-        <View style={styles.iconContainer}>
-          <Animated.View
-            style={[
-              styles.iconBg,
-              {
-                backgroundColor: isLight
-                  ? "#E7FFC6"
-                  : "rgba(16, 185, 129, 0.15)",
-                transform: [{ scale: pulseAnim }],
-              },
-            ]}
-          >
-            <Ion
-              name="sparkles"
-              size={48}
-              color={isLight ? "#007725" : Colors.primaryLight}
-            />
-          </Animated.View>
-        </View>
-
+        <Text style={[styles.percentageText, { color: Colors.text }]}>{percentage}%</Text>
         <Text style={[styles.title, { color: Colors.text }]}>
           Building your plan
         </Text>
         
-        <Animated.Text
-          style={[
-            styles.subtitle,
-            { color: Colors.textSecondary, opacity: fadeAnim },
-          ]}
-        >
-          {GENERATING_STEPS[stepIndex]}
-        </Animated.Text>
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="small" color={isLight ? "#007725" : Colors.primaryLight} style={styles.loader} />
+          <Animated.Text
+            style={[
+              styles.subtitle,
+              { color: Colors.textSecondary, opacity: fadeAnim },
+            ]}
+          >
+            {GENERATING_STEPS[stepIndex]}
+          </Animated.Text>
+        </View>
       </View>
     </LinearGradient>
   );
@@ -160,15 +146,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 24,
   },
-  iconContainer: {
-    marginBottom: 32,
-  },
-  iconBg: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    justifyContent: "center",
-    alignItems: "center",
+  percentageText: {
+    fontSize: 64,
+    fontWeight: "700",
+    marginBottom: 8,
   },
   title: {
     fontSize: 32,
@@ -176,6 +157,15 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     textAlign: "center",
     letterSpacing: -0.5,
+  },
+  loaderContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+  },
+  loader: {
+    marginRight: 4,
   },
   subtitle: {
     fontSize: 16,

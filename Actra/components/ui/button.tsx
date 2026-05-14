@@ -14,9 +14,11 @@ export type ButtonProps = {
   onPress: () => void;
   loading?: boolean;
   style?: ViewStyle;
+  /** Renders before the label (e.g. icon). Use the same label color: light theme uses white, dark theme uses black. */
+  leading?: React.ReactNode;
 };
 
-export function Button({ title, onPress, loading, style }: ButtonProps) {
+export function Button({ title, onPress, loading, style, leading }: ButtonProps) {
   const { activeTheme } = useThemeStore();
   const isLight = activeTheme === "light";
 
@@ -39,7 +41,10 @@ export function Button({ title, onPress, loading, style }: ButtonProps) {
       {loading ? (
         <ActivityIndicator color={spinnerColor} />
       ) : (
-        <Text style={[styles.btnText, { color: labelColor }]}>{title}</Text>
+        <View style={styles.btnContent}>
+          {leading}
+          <Text style={[styles.btnText, { color: labelColor }]}>{title}</Text>
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -71,6 +76,12 @@ const styles = StyleSheet.create({
     right: 0,
     height: 2,
     backgroundColor: "rgba(255, 255, 255, 0.25)",
+  },
+  btnContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
   },
   btnText: {
     fontSize: 16,
