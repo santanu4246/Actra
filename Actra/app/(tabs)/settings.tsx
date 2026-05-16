@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
 import { Ion } from "@/components/ui/icon";
+import { screenGradientColors, ONBOARDING_GRADIENT_LOCATIONS } from "@/constants/brand";
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -24,10 +25,7 @@ export default function SettingsScreen() {
 
   const isLight = activeTheme === "light";
 
-  const gradientColors = isLight
-    ? (["#E0FDD2", "#FFFFFF", "#FFFFFF"] as const)
-    : (["#0B2E1F", "#0A0A0A", "#0A0A0A"] as const);
-  const gradientLocations = [0, 0.4, 1] as const;
+  const gradientColors = screenGradientColors(isLight);
 
   const handleLogout = () => {
     router.replace("/" as Href);
@@ -36,9 +34,9 @@ export default function SettingsScreen() {
   return (
     <LinearGradient
       colors={[...gradientColors]}
-      locations={[...gradientLocations]}
-      start={{ x: 0.5, y: 0 }}
-      end={{ x: 0.5, y: 1 }}
+      locations={[...ONBOARDING_GRADIENT_LOCATIONS]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
       style={[
         styles.safeArea,
         {

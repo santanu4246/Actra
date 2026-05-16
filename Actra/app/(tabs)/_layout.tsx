@@ -3,31 +3,44 @@ import { Platform } from "react-native";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
 import { Ion } from "@/components/ui/icon";
+import { GREEN_ON_LIGHT, GREEN_SOLID } from "@/constants/brand";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabsLayout() {
   const Colors = useThemeColor();
   const { activeTheme } = useThemeStore();
   const isLight = activeTheme === "light";
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: isLight ? "#FFFFFF" : Colors.card,
-          borderTopColor: isLight ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.05)",
-          elevation: 0,
-          shadowOpacity: 0,
-          height: Platform.OS === "ios" ? 88 : 68,
-          paddingBottom: Platform.OS === "ios" ? 28 : 12,
-          paddingTop: 12,
+          position: "absolute",
+          bottom: Platform.OS === "ios" ? Math.max(insets.bottom, 16) : 24,
+          left: 0,
+          right: 0,
+          marginHorizontal: 20,
+          height: 68,
+          borderRadius: 34,
+          borderTopWidth: 0,
+          elevation: 10,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 10 },
+          shadowOpacity: 0.25,
+          shadowRadius: 20,
+          backgroundColor: isLight ? "#FFFFFF" : "#1C1C1C",
         },
-        tabBarActiveTintColor: isLight ? "#007725" : Colors.primary,
-        tabBarInactiveTintColor: isLight ? "#A0A0A0" : Colors.textSecondary,
+        tabBarActiveTintColor: isLight ? GREEN_ON_LIGHT : GREEN_SOLID,
+        tabBarInactiveTintColor: isLight ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.4)",
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: "600",
-          marginTop: 4,
+          paddingBottom: 10,
+        },
+        tabBarItemStyle: {
+          paddingTop: 10,
         },
       }}
     >
@@ -41,11 +54,11 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="progress"
+        name="focus"
         options={{
-          title: "Progress",
+          title: "Focus",
           tabBarIcon: ({ color, focused }) => (
-            <Ion name={focused ? "bar-chart" : "bar-chart-outline"} size={24} color={color} />
+            <Ion name={focused ? "aperture" : "aperture-outline"} size={26} color={color} />
           ),
         }}
       />

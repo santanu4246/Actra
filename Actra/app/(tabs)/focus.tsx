@@ -8,29 +8,27 @@ import {
   ScrollView,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { screenGradientColors, ONBOARDING_GRADIENT_LOCATIONS } from "@/constants/brand";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
 import { Ion } from "@/components/ui/icon";
 
-export default function ProgressScreen() {
+export default function FocusScreen() {
   const Colors = useThemeColor();
   const { activeTheme } = useThemeStore();
   const insets = useSafeAreaInsets();
 
   const isLight = activeTheme === "light";
 
-  const gradientColors = isLight
-    ? (["#E0FDD2", "#FFFFFF", "#FFFFFF"] as const)
-    : (["#0B2E1F", "#0A0A0A", "#0A0A0A"] as const);
-  const gradientLocations = [0, 0.4, 1] as const;
+  const gradientColors = screenGradientColors(isLight);
 
   return (
     <LinearGradient
       colors={[...gradientColors]}
-      locations={[...gradientLocations]}
-      start={{ x: 0.5, y: 0 }}
-      end={{ x: 0.5, y: 1 }}
+      locations={[...ONBOARDING_GRADIENT_LOCATIONS]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
       style={[
         styles.safeArea,
         {
@@ -44,7 +42,7 @@ export default function ProgressScreen() {
         translucent
       />
       <View style={styles.header}>
-        <Text style={[styles.title, { color: Colors.text }]}>Progress</Text>
+        <Text style={[styles.title, { color: Colors.text }]}>Focus</Text>
       </View>
 
       <ScrollView

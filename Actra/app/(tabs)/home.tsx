@@ -4,7 +4,6 @@ import {
   StatusBar,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
   ScrollView,
 } from "react-native";
@@ -13,12 +12,27 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
 import { Ion } from "@/components/ui/icon";
+import {
+  screenGradientColors,
+  ONBOARDING_GRADIENT_LOCATIONS,
+  GREEN_SOLID,
+  GREEN_ON_LIGHT,
+} from "@/constants/brand";
 
-const INITIAL_TASKS = [
-  { id: "1", title: "Watch React Hooks video", completed: false },
-  { id: "2", title: "Build a simple counter component", completed: false },
-  { id: "3", title: "Practice passing props", completed: false },
-  { id: "4", title: "Quick quiz: dependency arrays", completed: false },
+const INITIAL_CHALLENGES = [
+  { id: "1", title: "Answer 10 Questions", progress: 3, total: 10, color: "#10B981", completed: false },
+  { id: "2", title: "Answer 10 Questions", progress: 3, total: 10, color: GREEN_SOLID, completed: false },
+  { id: "3", title: "Answer 10 Questions", progress: 10, total: 10, color: "#3B82F6", completed: true },
+];
+
+const DAYS = [
+  { id: "mon", label: "Mon", status: "completed" },
+  { id: "tue", label: "Tue", status: "completed" },
+  { id: "wed", label: "Wed", status: "completed" },
+  { id: "thu", label: "Today", status: "today" },
+  { id: "fri", label: "Fri", status: "future" },
+  { id: "sat", label: "Sat", status: "future" },
+  { id: "sun", label: "Sun", status: "future" },
 ];
 
 export default function HomeScreen() {
@@ -26,32 +40,17 @@ export default function HomeScreen() {
   const { activeTheme } = useThemeStore();
   const insets = useSafeAreaInsets();
 
-  const [tasks, setTasks] = useState(INITIAL_TASKS);
+  const [challenges, setChallenges] = useState(INITIAL_CHALLENGES);
 
   const isLight = activeTheme === "light";
-
-  const gradientColors = isLight
-    ? (["#E0FDD2", "#FFFFFF", "#FFFFFF"] as const)
-    : (["#0B2E1F", "#0A0A0A", "#0A0A0A"] as const);
-  const gradientLocations = [0, 0.4, 1] as const;
-
-  const toggleTask = (id: string) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
-  };
-
-  const completedCount = tasks.filter((t) => t.completed).length;
-  const progress = completedCount / tasks.length;
+  const gradientColors = screenGradientColors(isLight);
 
   return (
     <LinearGradient
       colors={[...gradientColors]}
-      locations={[...gradientLocations]}
-      start={{ x: 0.5, y: 0 }}
-      end={{ x: 0.5, y: 1 }}
+      locations={[...ONBOARDING_GRADIENT_LOCATIONS]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
       style={[
         styles.safeArea,
         {
@@ -65,31 +64,17 @@ export default function HomeScreen() {
         backgroundColor="transparent"
         translucent
       />
+      
+      {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={[styles.dateText, { color: Colors.textSecondary }]}>
-            {new Date().toLocaleDateString("en-US", {
-              weekday: "long",
-              month: "short",
-              day: "numeric",
-            })}
+        <View style={styles.headerLeft}>
+          <Text style={[styles.greetingText, { color: Colors.textSecondary }]}>
+            Goodmorning Alex! 🌻
           </Text>
           <Text style={[styles.title, { color: Colors.text }]}>
             Today's Plan
           </Text>
         </View>
-        <TouchableOpacity
-          style={[
-            styles.profileBtn,
-            { backgroundColor: isLight ? "#FFFFFF" : Colors.card },
-          ]}
-        >
-          <Ion
-            name="person-outline"
-            size={20}
-            color={isLight ? "#111111" : Colors.text}
-          />
-        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -97,101 +82,100 @@ export default function HomeScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View
-          style={[
-            styles.progressCard,
-            {
-              backgroundColor: isLight ? "#FFFFFF" : Colors.card,
-              borderColor: isLight
-                ? "rgba(0,0,0,0.05)"
-                : "rgba(255,255,255,0.05)",
-            },
-          ]}
-        >
-          <View style={styles.progressHeader}>
-            <Text style={[styles.progressTitle, { color: Colors.text }]}>
-              Learn React
-            </Text>
-            <Text style={[styles.progressText, { color: Colors.textSecondary }]}>
-              {completedCount} of {tasks.length} done
-            </Text>
+        {/* Daily Streak Card */}
+        <View style={[styles.card, { backgroundColor: isLight ? "#FFFFFF" : "#1E1E1E", paddingTop: 12, paddingBottom: 16 }]}>
+          <View style={styles.streakHeader}>
+            <LinearGradient
+              colors={["#9EFA3A", GREEN_SOLID]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={[styles.streakBadgeBg, { top: -28, left: -20 }]}
+            >
+              <Text style={styles.streakBadgeText}>Daily Streak</Text>
+            </LinearGradient>
+            
+            <View style={styles.streakCountBg}>
+              <Ion name="flash" size={12} color={GREEN_SOLID} style={{ marginTop: 1 }} />
+              <Text style={styles.streakCountText}>6</Text>
+            </View>
           </View>
-          <View
-            style={[
-              styles.progressBarBg,
-              { backgroundColor: isLight ? "#F0F0F0" : "rgba(255,255,255,0.1)" },
-            ]}
-          >
-            <View
-              style={[
-                styles.progressBarFill,
-                {
-                  backgroundColor: isLight ? "#007725" : Colors.primary,
-                  width: `${progress * 100}%`,
-                },
-              ]}
-            />
+
+          <View style={styles.daysRow}>
+            {DAYS.map((day) => (
+              <View key={day.id} style={styles.dayCol}>
+                {day.status === "completed" ? (
+                  <View style={styles.dayCircleCompleted}>
+                    <Ion name="flash" size={12} color="#1E1E1E" />
+                  </View>
+                ) : day.status === "today" ? (
+                  <View style={styles.dayCircleToday}>
+                    {/* Wavy outer edge simulation can be complex, using a dotted border or plain style for now */}
+                  </View>
+                ) : (
+                  <View style={styles.dayCircleFuture} />
+                )}
+                <Text style={[
+                  styles.dayLabel,
+                  { color: day.status === "future" ? Colors.textSecondary : Colors.text }
+                ]}>
+                  {day.label}
+                </Text>
+              </View>
+            ))}
           </View>
         </View>
 
-        <View style={styles.tasksContainer}>
-          <Text style={[styles.sectionTitle, { color: Colors.text }]}>
-            Your tasks
-          </Text>
-          
-          {tasks.map((task) => (
-            <TouchableOpacity
-              key={task.id}
-              style={[
-                styles.taskCard,
-                {
-                  backgroundColor: isLight ? "#FFFFFF" : Colors.card,
-                  borderColor: isLight
-                    ? "rgba(0,0,0,0.05)"
-                    : "rgba(255,255,255,0.05)",
-                  opacity: task.completed ? 0.6 : 1,
-                },
-              ]}
-              activeOpacity={0.7}
-              onPress={() => toggleTask(task.id)}
-            >
-              <View
-                style={[
-                  styles.checkbox,
-                  {
-                    borderColor: task.completed
-                      ? isLight
-                        ? "#007725"
-                        : Colors.primary
-                      : isLight
-                      ? "#D0D0D0"
-                      : Colors.border,
-                    backgroundColor: task.completed
-                      ? isLight
-                        ? "#007725"
-                        : Colors.primary
-                      : "transparent",
-                  },
-                ]}
-              >
-                {task.completed && (
-                  <Ion name="checkmark" size={16} color="#FFFFFF" />
-                )}
+        {/* Challenges Card */}
+        <View style={[styles.card, { backgroundColor: isLight ? "#FFFFFF" : "#1E1E1E", marginTop: 16 }]}>
+          <View style={styles.challengesHeader}>
+            <Text style={[styles.challengesTitle, { color: Colors.text }]}>
+              Challenges
+            </Text>
+            {/* Decorative shapes for the header right */}
+            <View style={styles.decorativeShapes}>
+              <View style={styles.decoShape1} />
+              <View style={styles.decoShape2} />
+              <View style={styles.decoShape3} />
+            </View>
+          </View>
+
+          <View style={styles.challengesList}>
+            {challenges.map((challenge, index) => (
+              <View key={challenge.id} style={[styles.challengeRow, index > 0 && styles.challengeRowMargin]}>
+                <View style={[styles.challengeCheckbox, { borderColor: challenge.color }]}>
+                  {challenge.completed && (
+                    <Ion name="checkmark" size={14} color={challenge.color} />
+                  )}
+                </View>
+                
+                <View style={styles.challengeInfo}>
+                  <Text style={[styles.challengeTitle, { color: Colors.text }]}>
+                    {challenge.title}
+                  </Text>
+                  <View style={styles.progressRow}>
+                    <View style={styles.progressBarBg}>
+                      <View 
+                        style={[
+                          styles.progressBarFill, 
+                          { 
+                            backgroundColor: challenge.color, 
+                            width: `${(challenge.progress / challenge.total) * 100}%` 
+                          }
+                        ]} 
+                      />
+                    </View>
+                    <Text style={styles.progressText}>
+                      {challenge.progress}/{challenge.total}
+                    </Text>
+                  </View>
+                </View>
               </View>
-              <Text
-                style={[
-                  styles.taskTitle,
-                  {
-                    color: Colors.text,
-                    textDecorationLine: task.completed ? "line-through" : "none",
-                  },
-                ]}
-              >
-                {task.title}
-              </Text>
-            </TouchableOpacity>
-          ))}
+            ))}
+          </View>
         </View>
+        
+        {/* Padding for tab bar */}
+        <View style={{ height: 100 }} />
       </ScrollView>
     </LinearGradient>
   );
@@ -207,69 +191,197 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 24,
     paddingTop: 16,
-    paddingBottom: 8,
+    paddingBottom: 16,
   },
-  dateText: {
+  headerLeft: {
+    flex: 1,
+  },
+  greetingText: {
     fontSize: 14,
     fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
     marginBottom: 4,
   },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: "900",
     letterSpacing: -0.5,
-  },
-  profileBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.05)",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
   },
   container: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 40,
+    paddingHorizontal: 20,
+    paddingTop: 24,
   },
-  progressCard: {
-    padding: 20,
+  card: {
     borderRadius: 24,
-    borderWidth: 1,
-    marginBottom: 32,
+    padding: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.1,
     shadowRadius: 12,
-    elevation: 3,
+    elevation: 4,
   },
-  progressHeader: {
+  // Streak Card
+  streakHeader: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    marginBottom: 12,
+    position: "relative",
+  },
+  streakBadgeBg: {
+    position: "absolute",
+    left: -20,
+    top: -36,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+    zIndex: 10,
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
+  streakBadgeText: {
+    color: "#1E1E1E",
+    fontWeight: "800",
+    fontSize: 12,
+  },
+  streakCountBg: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(124, 232, 0, 0.15)",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  streakCountText: {
+    color: GREEN_SOLID,
+    fontWeight: "800",
+    fontSize: 14,
+  },
+  daysRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-end",
-    marginBottom: 16,
+    alignItems: "center",
   },
-  progressTitle: {
-    fontSize: 18,
+  dayCol: {
+    alignItems: "center",
+    gap: 4,
+  },
+  dayCircleCompleted: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: GREEN_SOLID,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  dayCircleToday: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#333333",
+    borderWidth: 2,
+    borderColor: "#444444",
+    borderStyle: "dashed",
+  },
+  dayCircleFuture: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#333333",
+  },
+  dayLabel: {
+    fontSize: 10,
+    fontWeight: "600",
+  },
+  // Challenges Card
+  challengesHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 24,
+    position: "relative",
+  },
+  challengesTitle: {
+    fontSize: 22,
+    fontWeight: "900",
+  },
+  decorativeShapes: {
+    position: "absolute",
+    right: -10,
+    top: -10,
+    width: 60,
+    height: 60,
+  },
+  decoShape1: {
+    position: "absolute",
+    right: 10,
+    top: 20,
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    backgroundColor: GREEN_SOLID,
+    transform: [{ rotate: "45deg" }],
+  },
+  decoShape2: {
+    position: "absolute",
+    right: 35,
+    top: 5,
+    width: 12,
+    height: 12,
+    backgroundColor: GREEN_SOLID,
+    transform: [{ rotate: "15deg" }],
+  },
+  decoShape3: {
+    position: "absolute",
+    right: 5,
+    top: 50,
+    width: 8,
+    height: 8,
+    backgroundColor: GREEN_SOLID,
+    borderRadius: 4,
+  },
+  challengesList: {
+    gap: 0,
+  },
+  challengeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  challengeRowMargin: {
+    marginTop: 24,
+  },
+  challengeCheckbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 6,
+    borderWidth: 2,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 16,
+  },
+  challengeInfo: {
+    flex: 1,
+  },
+  challengeTitle: {
+    fontSize: 15,
     fontWeight: "700",
+    marginBottom: 8,
   },
-  progressText: {
-    fontSize: 14,
-    fontWeight: "500",
+  progressRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
   },
   progressBarBg: {
+    flex: 1,
     height: 8,
+    backgroundColor: "#333333",
     borderRadius: 4,
     overflow: "hidden",
   },
@@ -277,38 +389,10 @@ const styles = StyleSheet.create({
     height: "100%",
     borderRadius: 4,
   },
-  tasksContainer: {
-    gap: 12,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "800",
-    marginBottom: 8,
-  },
-  taskCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 18,
-    borderRadius: 20,
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 2,
-  },
-  checkbox: {
-    width: 26,
-    height: 26,
-    borderRadius: 8,
-    borderWidth: 2,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 16,
-  },
-  taskTitle: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: "500",
+  progressText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#888888",
+    width: 36,
   },
 });
