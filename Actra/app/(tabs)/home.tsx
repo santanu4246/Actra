@@ -101,6 +101,9 @@ export default function HomeScreen() {
 
   const isLight = activeTheme === "light";
 
+  const streakDashBorderCompleted = isLight ? "#000000" : "#FFFFFF";
+  const streakDashBorderToday = isLight ? "#111111" : "#FFFFFF";
+
   const borderColorFor = (c: Challenge) =>
     c.boxColor ?? (c.tickVariant === "green" ? GREEN_TICK_BORDER : BLUE_TICK_BORDER);
 
@@ -125,7 +128,7 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Text style={[styles.greetingText, { color: Colors.textSecondary }]}>
-            Goodmorning Santanu! 🌻
+            Good Morning Santanu! 🌻
           </Text>
           <Text style={[styles.title, { color: Colors.text }]}>
             Today's Plan
@@ -164,12 +167,20 @@ export default function HomeScreen() {
                     colors={["#7CE800", HOME_GREEN]}
                     start={{ x: 0.2, y: 0.2 }}
                     end={{ x: 0.8, y: 0.8 }}
-                    style={styles.dayCircleCompleted}
+                    style={[
+                      styles.dayCircleCompleted,
+                      { borderColor: streakDashBorderCompleted },
+                    ]}
                   >
                     <SparkIcon size={12} color="#1E1E1E" />
                   </LinearGradient>
                 ) : day.status === "today" ? (
-                  <View style={styles.dayCircleToday}>
+                  <View
+                    style={[
+                      styles.dayCircleToday,
+                      { borderColor: streakDashBorderToday },
+                    ]}
+                  >
                     {/* Dark empty circle with dashed border */}
                   </View>
                 ) : (
@@ -177,7 +188,7 @@ export default function HomeScreen() {
                 )}
                 <Text style={[
                   styles.dayLabel,
-                  { color: "#FFFFFF" }
+                  { color: isLight ? Colors.text : "#FFFFFF" },
                 ]}>
                   {day.label}
                 </Text>
@@ -386,7 +397,6 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     borderWidth: 1.5,
-    borderColor: "#000000",
     borderStyle: "dashed",
     justifyContent: "center",
     alignItems: "center",
@@ -397,7 +407,6 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     backgroundColor: "#2A2A2A",
     borderWidth: 1.5,
-    borderColor: "#111111",
     borderStyle: "dashed",
   },
   dayCircleFuture: {
