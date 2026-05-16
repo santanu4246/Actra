@@ -6,6 +6,7 @@ import {
   Text,
   View,
   ScrollView,
+  Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -16,7 +17,6 @@ import {
   screenGradientColors,
   ONBOARDING_GRADIENT_LOCATIONS,
   GREEN_SOLID,
-  GREEN_ON_LIGHT,
 } from "@/constants/brand";
 
 const INITIAL_CHALLENGES = [
@@ -69,7 +69,7 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Text style={[styles.greetingText, { color: Colors.textSecondary }]}>
-            Goodmorning Alex! 🌻
+            Goodmorning Santanu! 🌻
           </Text>
           <Text style={[styles.title, { color: Colors.text }]}>
             Today's Plan
@@ -125,18 +125,18 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Challenges Card */}
-        <View style={[styles.card, { backgroundColor: isLight ? "#FFFFFF" : "#1E1E1E", marginTop: 16 }]}>
+        {/* Tasks card */}
+        <View style={[styles.card, styles.tasksCard, { backgroundColor: isLight ? "#FFFFFF" : "#1E1E1E", marginTop: 16 }]}>
+          <Image
+            source={require("../../assets/home/taskleftimg.png")}
+            style={styles.tasksCardImage}
+            resizeMode="contain"
+            accessibilityIgnoresInvertColors
+          />
           <View style={styles.challengesHeader}>
             <Text style={[styles.challengesTitle, { color: Colors.text }]}>
-              Challenges
+              Tasks
             </Text>
-            {/* Decorative shapes for the header right */}
-            <View style={styles.decorativeShapes}>
-              <View style={styles.decoShape1} />
-              <View style={styles.decoShape2} />
-              <View style={styles.decoShape3} />
-            </View>
           </View>
 
           <View style={styles.challengesList}>
@@ -222,6 +222,17 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 4,
   },
+  tasksCard: {
+    position: "relative",
+    overflow: "hidden",
+  },
+  tasksCardImage: {
+    position: "absolute",
+    right: -45,
+    top: -10,
+    width: 100,
+    height: 100,
+  },
   // Streak Card
   streakHeader: {
     flexDirection: "row",
@@ -299,52 +310,17 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: "600",
   },
-  // Challenges Card
+  // Tasks card header
   challengesHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
     marginBottom: 24,
-    position: "relative",
+    paddingRight: 72,
   },
   challengesTitle: {
     fontSize: 22,
     fontWeight: "900",
-  },
-  decorativeShapes: {
-    position: "absolute",
-    right: -10,
-    top: -10,
-    width: 60,
-    height: 60,
-  },
-  decoShape1: {
-    position: "absolute",
-    right: 10,
-    top: 20,
-    width: 30,
-    height: 30,
-    borderRadius: 10,
-    backgroundColor: GREEN_SOLID,
-    transform: [{ rotate: "45deg" }],
-  },
-  decoShape2: {
-    position: "absolute",
-    right: 35,
-    top: 5,
-    width: 12,
-    height: 12,
-    backgroundColor: GREEN_SOLID,
-    transform: [{ rotate: "15deg" }],
-  },
-  decoShape3: {
-    position: "absolute",
-    right: 5,
-    top: 50,
-    width: 8,
-    height: 8,
-    backgroundColor: GREEN_SOLID,
-    borderRadius: 4,
   },
   challengesList: {
     gap: 0,
