@@ -3,8 +3,9 @@ import { Platform } from "react-native";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
 import { Ion } from "@/components/ui/icon";
-import { GREEN_ON_LIGHT, GREEN_SOLID } from "@/constants/brand";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const HOME_GREEN = "#24bf55";
 
 export default function TabsLayout() {
   const Colors = useThemeColor();
@@ -32,7 +33,7 @@ export default function TabsLayout() {
           shadowRadius: 20,
           backgroundColor: isLight ? "#FFFFFF" : "#1C1C1C",
         },
-        tabBarActiveTintColor: isLight ? GREEN_ON_LIGHT : GREEN_SOLID,
+        tabBarActiveTintColor: HOME_GREEN,
         tabBarInactiveTintColor: isLight ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.4)",
         tabBarLabelStyle: {
           fontSize: 12,

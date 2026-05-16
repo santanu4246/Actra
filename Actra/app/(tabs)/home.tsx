@@ -13,16 +13,46 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
 import { Ion } from "@/components/ui/icon";
+import { TaskTickGreen, TaskTickBlue } from "@/components/ui/task-tick";
 import {
   screenGradientColors,
   ONBOARDING_GRADIENT_LOCATIONS,
-  GREEN_SOLID,
 } from "@/constants/brand";
 
-const INITIAL_CHALLENGES = [
-  { id: "1", title: "Answer 10 Questions", progress: 3, total: 10, color: "#10B981", completed: false },
-  { id: "2", title: "Answer 10 Questions", progress: 3, total: 10, color: GREEN_SOLID, completed: false },
-  { id: "3", title: "Answer 10 Questions", progress: 10, total: 10, color: "#3B82F6", completed: true },
+type TickVariant = "green" | "blue";
+
+type Challenge = {
+  id: string;
+  title: string;
+  boxColor?: string;
+  tickVariant: TickVariant;
+  completed: boolean;
+};
+
+const HOME_GREEN = "#24bf55";
+const GREEN_TICK_BORDER = HOME_GREEN;
+const BLUE_TICK_BORDER = "#3A85FF";
+
+const INITIAL_CHALLENGES: Challenge[] = [
+  {
+    id: "1",
+    title: "Practice Sprint: answer 35 adaptive questions",
+    tickVariant: "green",
+    completed: false,
+  },
+  {
+    id: "2",
+    title: "Goal Builder: solve 28 weak-topic questions",
+    boxColor: "#ffb75e",
+    tickVariant: "blue",
+    completed: false,
+  },
+  {
+    id: "3",
+    title: "Daily Wrap: complete 24 revision questions",
+    tickVariant: "blue",
+    completed: true,
+  },
 ];
 
 const DAYS = [
@@ -35,15 +65,49 @@ const DAYS = [
   { id: "sun", label: "Sun", status: "future" },
 ];
 
+const ACHIEVEMENTS = [
+  {
+    id: "1",
+    title: "7 Day Streak",
+    subtitle: "Completed 7 days",
+    image: require("../../assets/home/7daystreak.png"),
+    barColor: "#FF6B6B",
+  },
+  {
+    id: "2",
+    title: "30 Day Streak",
+    subtitle: "Completed 30 days",
+    image: require("../../assets/home/30daystreak.png"),
+    barColor: "#9D4EDD",
+  },
+  {
+    id: "3",
+    title: "50 Day Streak",
+    subtitle: "Completed 50 days",
+    image: require("../../assets/home/50daystreak.png"),
+    barColor: "#FF6B6B",
+  },
+  {
+    id: "4",
+    title: "100 Day Streak",
+    subtitle: "Completed 100 days",
+    image: require("../../assets/home/100daystreak.png"),
+    barColor: "#9D4EDD",
+  },
+];
+
 export default function HomeScreen() {
   const Colors = useThemeColor();
   const { activeTheme } = useThemeStore();
   const insets = useSafeAreaInsets();
 
-  const [challenges, setChallenges] = useState(INITIAL_CHALLENGES);
+  const [challenges] = useState<Challenge[]>(INITIAL_CHALLENGES);
 
   const isLight = activeTheme === "light";
   const gradientColors = screenGradientColors(isLight);
+
+  const borderColorFor = (c: Challenge) =>
+    c.boxColor ?? (c.tickVariant === "green" ? GREEN_TICK_BORDER : BLUE_TICK_BORDER);
 
   return (
     <LinearGradient
@@ -85,17 +149,12 @@ export default function HomeScreen() {
         {/* Daily Streak Card */}
         <View style={[styles.card, { backgroundColor: isLight ? "#FFFFFF" : "#1E1E1E", paddingTop: 12, paddingBottom: 16 }]}>
           <View style={styles.streakHeader}>
-            <LinearGradient
-              colors={["#9EFA3A", GREEN_SOLID]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={[styles.streakBadgeBg, { top: -28, left: -20 }]}
-            >
+            <View style={[styles.streakBadgeBg, { top: -28, left: -20 }]}>
               <Text style={styles.streakBadgeText}>Daily Streak</Text>
-            </LinearGradient>
+            </View>
             
             <View style={styles.streakCountBg}>
-              <Ion name="flash" size={12} color={GREEN_SOLID} style={{ marginTop: 1 }} />
+              <Ion name="flash" size={12} color={HOME_GREEN} style={{ marginTop: 1 }} />
               <Text style={styles.streakCountText}>6</Text>
             </View>
           </View>
@@ -142,38 +201,75 @@ export default function HomeScreen() {
           <View style={styles.challengesList}>
             {challenges.map((challenge, index) => (
               <View key={challenge.id} style={[styles.challengeRow, index > 0 && styles.challengeRowMargin]}>
-                <View style={[styles.challengeCheckbox, { borderColor: challenge.color }]}>
-                  {challenge.completed && (
-                    <Ion name="checkmark" size={14} color={challenge.color} />
-                  )}
+                <View style={styles.challengeCheckboxStack}>
+                  <View
+                    style={[
+                      styles.challengeCheckbox,
+                      { borderColor: borderColorFor(challenge) },
+                    ]}
+                  />
+                  {challenge.completed ? (
+                    <View
+                      style={styles.taskTickOverBox}
+                      pointerEvents="none"
+                    >
+                      {challenge.tickVariant === "green" ? (
+                        <TaskTickGreen size={26} />
+                      ) : (
+                        <TaskTickBlue size={26} />
+                      )}
+                    </View>
+                  ) : null}
                 </View>
-                
+
                 <View style={styles.challengeInfo}>
                   <Text style={[styles.challengeTitle, { color: Colors.text }]}>
                     {challenge.title}
                   </Text>
-                  <View style={styles.progressRow}>
-                    <View style={styles.progressBarBg}>
-                      <View 
-                        style={[
-                          styles.progressBarFill, 
-                          { 
-                            backgroundColor: challenge.color, 
-                            width: `${(challenge.progress / challenge.total) * 100}%` 
-                          }
-                        ]} 
-                      />
-                    </View>
-                    <Text style={styles.progressText}>
-                      {challenge.progress}/{challenge.total}
-                    </Text>
-                  </View>
                 </View>
               </View>
             ))}
           </View>
         </View>
         
+        {/* Achievements Section */}
+        <View style={[styles.card, styles.achievementsSection, { backgroundColor: isLight ? "#FFFFFF" : "#1E1E1E" }]}>
+          <View style={styles.achievementsHeader}>
+            <Text style={[styles.achievementsTitle, { color: Colors.text }]}>
+              Achievements
+            </Text>
+          </View>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.achievementsList}
+          >
+            {ACHIEVEMENTS.map((achievement) => (
+              <View key={achievement.id} style={styles.achievementCard}>
+                <Image
+                  source={achievement.image}
+                  style={styles.achievementImage}
+                  resizeMode="contain"
+                  accessibilityIgnoresInvertColors
+                />
+                <Text style={[styles.achievementCardTitle, { color: Colors.text }]}>
+                  {achievement.title}
+                </Text>
+                <Text style={styles.achievementSubtitle}>
+                  {achievement.subtitle}
+                </Text>
+                <View
+                  style={[
+                    styles.achievementBar,
+                    { backgroundColor: achievement.barColor },
+                  ]}
+                />
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+
         {/* Padding for tab bar */}
         <View style={{ height: 100 }} />
       </ScrollView>
@@ -245,6 +341,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: -20,
     top: -36,
+    backgroundColor: HOME_GREEN,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 16,
@@ -263,14 +360,14 @@ const styles = StyleSheet.create({
   streakCountBg: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(124, 232, 0, 0.15)",
+    backgroundColor: "rgba(36, 191, 85, 0.16)",
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
     gap: 4,
   },
   streakCountText: {
-    color: GREEN_SOLID,
+    color: HOME_GREEN,
     fontWeight: "800",
     fontSize: 14,
   },
@@ -287,7 +384,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: GREEN_SOLID,
+    backgroundColor: HOME_GREEN,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -332,14 +429,26 @@ const styles = StyleSheet.create({
   challengeRowMargin: {
     marginTop: 24,
   },
-  challengeCheckbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 6,
-    borderWidth: 2,
+  challengeCheckboxStack: {
+    width: 28,
+    height: 28,
+    marginRight: 14,
+    position: "relative",
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 16,
+  },
+  taskTickOverBox: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 2,
+  },
+  challengeCheckbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 2,
+    backgroundColor: "transparent",
   },
   challengeInfo: {
     flex: 1,
@@ -347,28 +456,51 @@ const styles = StyleSheet.create({
   challengeTitle: {
     fontSize: 15,
     fontWeight: "700",
-    marginBottom: 8,
   },
-  progressRow: {
+  // Achievements Section
+  achievementsSection: {
+    marginTop: 16,
+  },
+  achievementsHeader: {
     flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    gap: 12,
+    marginBottom: 16,
   },
-  progressBarBg: {
-    flex: 1,
-    height: 8,
-    backgroundColor: "#333333",
-    borderRadius: 4,
-    overflow: "hidden",
+  achievementsTitle: {
+    fontSize: 20,
+    fontWeight: "800",
   },
-  progressBarFill: {
-    height: "100%",
-    borderRadius: 4,
+  achievementsList: {
+    paddingBottom: 8,
   },
-  progressText: {
-    fontSize: 12,
+  achievementCard: {
+    width: 136,
+    alignItems: "flex-start",
+    marginRight: 16,
+    backgroundColor: "transparent",
+  },
+  achievementImage: {
+    width: 110,
+    height: 110,
+    marginBottom: 10,
+    backgroundColor: "transparent",
+  },
+  achievementCardTitle: {
+    fontSize: 14,
     fontWeight: "700",
+    marginBottom: 4,
+    textAlign: "left",
+  },
+  achievementSubtitle: {
+    fontSize: 11,
     color: "#888888",
-    width: 36,
+    textAlign: "left",
+    marginBottom: 12,
+  },
+  achievementBar: {
+    width: 50,
+    height: 8,
+    borderRadius: 4,
   },
 });
