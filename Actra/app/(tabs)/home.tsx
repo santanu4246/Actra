@@ -13,11 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
 import { Ion } from "@/components/ui/icon";
-import { TaskTickGreen, TaskTickBlue } from "@/components/ui/task-tick";
-import {
-  screenGradientColors,
-  ONBOARDING_GRADIENT_LOCATIONS,
-} from "@/constants/brand";
+import { TaskTickGreen, TaskTickBlue, SparkIcon } from "@/components/ui/task-tick";
 
 type TickVariant = "green" | "blue";
 
@@ -71,14 +67,14 @@ const ACHIEVEMENTS = [
     title: "7 Day Streak",
     subtitle: "Completed 7 days",
     image: require("../../assets/home/7daystreak.png"),
-    barColor: "#FF6B6B",
+    barColor: "#FFB75E",
   },
   {
     id: "2",
     title: "30 Day Streak",
     subtitle: "Completed 30 days",
     image: require("../../assets/home/30daystreak.png"),
-    barColor: "#9D4EDD",
+    barColor: "#FFB75E",
   },
   {
     id: "3",
@@ -92,7 +88,7 @@ const ACHIEVEMENTS = [
     title: "100 Day Streak",
     subtitle: "Completed 100 days",
     image: require("../../assets/home/100daystreak.png"),
-    barColor: "#9D4EDD",
+    barColor: "#FF6B6B",
   },
 ];
 
@@ -104,20 +100,16 @@ export default function HomeScreen() {
   const [challenges] = useState<Challenge[]>(INITIAL_CHALLENGES);
 
   const isLight = activeTheme === "light";
-  const gradientColors = screenGradientColors(isLight);
 
   const borderColorFor = (c: Challenge) =>
     c.boxColor ?? (c.tickVariant === "green" ? GREEN_TICK_BORDER : BLUE_TICK_BORDER);
 
   return (
-    <LinearGradient
-      colors={[...gradientColors]}
-      locations={[...ONBOARDING_GRADIENT_LOCATIONS]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
+    <View
       style={[
         styles.safeArea,
         {
+          backgroundColor: isLight ? "#F7F8FA" : "#0F0F0F",
           paddingTop: insets.top + (Platform.OS === "android" ? 10 : 0),
           paddingBottom: insets.bottom,
         },
@@ -149,9 +141,14 @@ export default function HomeScreen() {
         {/* Daily Streak Card */}
         <View style={[styles.card, { backgroundColor: isLight ? "#FFFFFF" : "#1E1E1E", paddingTop: 12, paddingBottom: 16 }]}>
           <View style={styles.streakHeader}>
-            <View style={[styles.streakBadgeBg, { top: -28, left: -20 }]}>
+            <LinearGradient
+              colors={["#7CE800", HOME_GREEN]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={[styles.streakBadgeBg, { top: -32, left: -24 }]}
+            >
               <Text style={styles.streakBadgeText}>Daily Streak</Text>
-            </View>
+            </LinearGradient>
             
             <View style={styles.streakCountBg}>
               <Ion name="flash" size={12} color={HOME_GREEN} style={{ marginTop: 1 }} />
@@ -163,19 +160,24 @@ export default function HomeScreen() {
             {DAYS.map((day) => (
               <View key={day.id} style={styles.dayCol}>
                 {day.status === "completed" ? (
-                  <View style={styles.dayCircleCompleted}>
-                    <Ion name="flash" size={12} color="#1E1E1E" />
-                  </View>
+                  <LinearGradient
+                    colors={["#7CE800", HOME_GREEN]}
+                    start={{ x: 0.2, y: 0.2 }}
+                    end={{ x: 0.8, y: 0.8 }}
+                    style={styles.dayCircleCompleted}
+                  >
+                    <SparkIcon size={12} color="#1E1E1E" />
+                  </LinearGradient>
                 ) : day.status === "today" ? (
                   <View style={styles.dayCircleToday}>
-                    {/* Wavy outer edge simulation can be complex, using a dotted border or plain style for now */}
+                    {/* Dark empty circle with dashed border */}
                   </View>
                 ) : (
                   <View style={styles.dayCircleFuture} />
                 )}
                 <Text style={[
                   styles.dayLabel,
-                  { color: day.status === "future" ? Colors.textSecondary : Colors.text }
+                  { color: "#FFFFFF" }
                 ]}>
                   {day.label}
                 </Text>
@@ -273,7 +275,7 @@ export default function HomeScreen() {
         {/* Padding for tab bar */}
         <View style={{ height: 100 }} />
       </ScrollView>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -341,10 +343,9 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: -20,
     top: -36,
-    backgroundColor: HOME_GREEN,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
     zIndex: 10,
     elevation: 10,
     shadowColor: "#000",
@@ -354,8 +355,8 @@ const styles = StyleSheet.create({
   },
   streakBadgeText: {
     color: "#1E1E1E",
-    fontWeight: "800",
-    fontSize: 12,
+    fontWeight: "700",
+    fontSize: 14,
   },
   streakCountBg: {
     flexDirection: "row",
@@ -369,7 +370,7 @@ const styles = StyleSheet.create({
   streakCountText: {
     color: HOME_GREEN,
     fontWeight: "800",
-    fontSize: 14,
+    fontSize: 16,
   },
   daysRow: {
     flexDirection: "row",
@@ -381,31 +382,34 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   dayCircleCompleted: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: HOME_GREEN,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: "#000000",
+    borderStyle: "dashed",
     justifyContent: "center",
     alignItems: "center",
   },
   dayCircleToday: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: "#333333",
-    borderWidth: 2,
-    borderColor: "#444444",
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#2A2A2A",
+    borderWidth: 1.5,
+    borderColor: "#111111",
     borderStyle: "dashed",
   },
   dayCircleFuture: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: "#333333",
   },
   dayLabel: {
-    fontSize: 10,
-    fontWeight: "600",
+    fontSize: 14,
+    fontWeight: "700",
+    marginTop: 2,
   },
   // Tasks card header
   challengesHeader: {
