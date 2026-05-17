@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import {
   Platform,
+  Pressable,
   StatusBar,
   StyleSheet,
   Text,
@@ -13,7 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
 import { Ion } from "@/components/ui/icon";
-import { TaskTickGreen, TaskTickBlue, SparkIcon } from "@/components/ui/task-tick";
+import { SparkIcon } from "@/components/ui/task-tick";
 
 type TickVariant = "green" | "blue";
 
@@ -26,8 +27,11 @@ type Challenge = {
 };
 
 const HOME_GREEN = "#24bf55";
-const GREEN_TICK_BORDER = HOME_GREEN;
 const BLUE_TICK_BORDER = "#3A85FF";
+
+/** Per-task neon accent (left glow + checkbox frame). */
+const taskAccentFor = (c: Challenge) =>
+  c.boxColor ?? (c.tickVariant === "green" ? "#7CE800" : BLUE_TICK_BORDER);
 
 const INITIAL_CHALLENGES: Challenge[] = [
   {
@@ -101,11 +105,8 @@ export default function HomeScreen() {
 
   const isLight = activeTheme === "light";
 
-  const streakDashBorderCompleted = isLight ? "#000000" : "#FFFFFF";
-  const streakDashBorderToday = isLight ? "#111111" : "#FFFFFF";
-
-  const borderColorFor = (c: Challenge) =>
-    c.boxColor ?? (c.tickVariant === "green" ? GREEN_TICK_BORDER : BLUE_TICK_BORDER);
+  const streakDashBorderCompleted = "#000000";
+  const streakDashBorderToday = "#000000";
 
   return (
     <View
@@ -134,6 +135,20 @@ export default function HomeScreen() {
             Today's Plan
           </Text>
         </View>
+        <Pressable
+          style={({ pressed }) => [
+            styles.headerNotifyBtn,
+            {
+              backgroundColor: isLight ? "#E8EBF0" : "rgba(255,255,255,0.12)",
+            },
+            pressed && styles.headerNotifyBtnPressed,
+          ]}
+          onPress={() => {}}
+          accessibilityRole="button"
+          accessibilityLabel="Notifications"
+        >
+          <Ion name="notifications-outline" size={26} color={Colors.text} />
+        </Pressable>
       </View>
 
       <ScrollView
@@ -142,24 +157,34 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Daily Streak Card */}
-        <View style={[styles.card, { backgroundColor: isLight ? "#FFFFFF" : "#1E1E1E", paddingTop: 12, paddingBottom: 16 }]}>
-          <View style={styles.streakHeader}>
+        <View style={[styles.card, styles.streakCard, { backgroundColor: isLight ? "#FFFFFF" : "#1E1E1E" }]}>
+          <View style={styles.streakTopRow}>
+            <View style={styles.streakTitles}>
+              <Text style={[styles.streakTitle, { color: Colors.text }]}>Daily streak</Text>
+              <Text style={[styles.streakSubtitle, { color: Colors.textSecondary }]}>
+                Hit each day to keep the chain
+              </Text>
+            </View>
             <LinearGradient
               colors={["#7CE800", HOME_GREEN]}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
-              style={[styles.streakBadgeBg, { top: -32, left: -24 }]}
+              style={styles.streakCountPill}
             >
-              <Text style={styles.streakBadgeText}>Daily Streak</Text>
+              <SparkIcon size={18} color="#1E1E1E" />
+              <Text style={styles.streakCountNumber}>6</Text>
             </LinearGradient>
-            
-            <View style={styles.streakCountBg}>
-              <Ion name="flash" size={12} color={HOME_GREEN} style={{ marginTop: 1 }} />
-              <Text style={styles.streakCountText}>6</Text>
-            </View>
           </View>
 
-          <View style={styles.daysRow}>
+          <View
+            style={[
+              styles.daysRow,
+              styles.daysRowBelow,
+              {
+                borderTopColor: isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.12)",
+              },
+            ]}
+          >
             {DAYS.map((day) => (
               <View key={day.id} style={styles.dayCol}>
                 {day.status === "completed" ? (
@@ -172,7 +197,7 @@ export default function HomeScreen() {
                       { borderColor: streakDashBorderCompleted },
                     ]}
                   >
-                    <SparkIcon size={12} color="#1E1E1E" />
+                    <SparkIcon size={15} color="#1E1E1E" />
                   </LinearGradient>
                 ) : day.status === "today" ? (
                   <View
@@ -198,50 +223,66 @@ export default function HomeScreen() {
         </View>
 
         {/* Tasks card */}
-        <View style={[styles.card, styles.tasksCard, { backgroundColor: isLight ? "#FFFFFF" : "#1E1E1E", marginTop: 16 }]}>
-          <Image
-            source={require("../../assets/home/taskleftimg.png")}
-            style={styles.tasksCardImage}
-            resizeMode="contain"
-            accessibilityIgnoresInvertColors
-          />
+        <View
+          style={[
+            styles.card,
+            styles.tasksCard,
+            { backgroundColor: isLight ? "#FFFFFF" : "#1E1E1E", marginTop: 16 },
+          ]}
+        >
           <View style={styles.challengesHeader}>
-            <Text style={[styles.challengesTitle, { color: Colors.text }]}>
-              Tasks
-            </Text>
+            <View>
+              <Text style={[styles.challengesTitle, { color: Colors.text }]}>
+                Tasks
+              </Text>
+              <Text style={[styles.challengesSubtitle, { color: Colors.textSecondary }]}>
+                Tap to jump in when you are ready
+              </Text>
+            </View>
           </View>
 
           <View style={styles.challengesList}>
-            {challenges.map((challenge, index) => (
-              <View key={challenge.id} style={[styles.challengeRow, index > 0 && styles.challengeRowMargin]}>
-                <View style={styles.challengeCheckboxStack}>
-                  <View
-                    style={[
-                      styles.challengeCheckbox,
-                      { borderColor: borderColorFor(challenge) },
-                    ]}
-                  />
-                  {challenge.completed ? (
+            {challenges.map((challenge) => {
+              const accent = taskAccentFor(challenge);
+              return (
+                <View
+                  key={challenge.id}
+                  style={[
+                    styles.challengeRow,
+                    isLight ? styles.challengeRowLight : styles.challengeRowDark,
+                    { borderLeftColor: accent },
+                  ]}
+                >
+                  <View style={styles.challengeCheckboxStack}>
                     <View
-                      style={styles.taskTickOverBox}
-                      pointerEvents="none"
-                    >
-                      {challenge.tickVariant === "green" ? (
-                        <TaskTickGreen size={26} />
-                      ) : (
-                        <TaskTickBlue size={26} />
-                      )}
-                    </View>
-                  ) : null}
-                </View>
+                      style={[
+                        styles.challengeCheckbox,
+                        { borderColor: accent },
+                      ]}
+                    />
+                    {challenge.completed ? (
+                      <View style={styles.taskTickOverBox} pointerEvents="none">
+                        <View style={styles.taskCheckWide}>
+                          <Ion name="checkmark" size={18} color={accent} />
+                        </View>
+                      </View>
+                    ) : null}
+                  </View>
 
-                <View style={styles.challengeInfo}>
-                  <Text style={[styles.challengeTitle, { color: Colors.text }]}>
-                    {challenge.title}
-                  </Text>
+                  <View style={styles.challengeInfo}>
+                    <Text
+                      style={[
+                        styles.challengeTitle,
+                        { color: Colors.text },
+                        challenge.completed && styles.challengeTitleDone,
+                      ]}
+                    >
+                      {challenge.title}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            ))}
+              );
+            })}
           </View>
         </View>
         
@@ -297,13 +338,22 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
     paddingHorizontal: 24,
     paddingTop: 16,
     paddingBottom: 16,
   },
   headerLeft: {
     flex: 1,
+    paddingRight: 12,
+  },
+  headerNotifyBtn: {
+    marginTop: 2,
+    padding: 8,
+    borderRadius: 14,
+  },
+  headerNotifyBtnPressed: {
+    opacity: 0.55,
   },
   greetingText: {
     fontSize: 14,
@@ -331,116 +381,123 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 4,
   },
-  tasksCard: {
-    position: "relative",
-    overflow: "hidden",
+  streakCard: {
+    paddingVertical: 12,
   },
-  tasksCardImage: {
-    position: "absolute",
-    right: -45,
-    top: -10,
-    width: 100,
-    height: 100,
-  },
-  // Streak Card
-  streakHeader: {
+  streakTopRow: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
-    position: "relative",
+    marginBottom: 2,
   },
-  streakBadgeBg: {
-    position: "absolute",
-    left: -20,
-    top: -36,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    zIndex: 10,
-    elevation: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+  streakTitles: {
+    flex: 1,
+    paddingRight: 12,
   },
-  streakBadgeText: {
+  streakTitle: {
+    fontSize: 19,
+    fontWeight: "900",
+    letterSpacing: -0.3,
+    marginBottom: 2,
+  },
+  streakSubtitle: {
+    fontSize: 12,
+    fontWeight: "600",
+    lineHeight: 16,
+  },
+  streakCountPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 14,
+  },
+  streakCountNumber: {
     color: "#1E1E1E",
-    fontWeight: "700",
-    fontSize: 14,
-  },
-  streakCountBg: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(36, 191, 85, 0.16)",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    gap: 4,
-  },
-  streakCountText: {
-    color: HOME_GREEN,
-    fontWeight: "800",
-    fontSize: 16,
+    fontSize: 17,
+    fontWeight: "900",
   },
   daysRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
+  daysRowBelow: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
   dayCol: {
     alignItems: "center",
-    gap: 4,
+    gap: 2,
   },
   dayCircleCompleted: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     borderWidth: 1.5,
     borderStyle: "dashed",
     justifyContent: "center",
     alignItems: "center",
   },
   dayCircleToday: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: "#2A2A2A",
     borderWidth: 1.5,
     borderStyle: "dashed",
   },
   dayCircleFuture: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: "#333333",
   },
   dayLabel: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "700",
-    marginTop: 2,
+    marginTop: 0,
+  },
+  tasksCard: {
+    paddingVertical: 18,
   },
   // Tasks card header
   challengesHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 24,
-    paddingRight: 72,
+    marginBottom: 14,
   },
   challengesTitle: {
-    fontSize: 22,
+    fontSize: 19,
     fontWeight: "900",
+    letterSpacing: -0.3,
+  },
+  challengesSubtitle: {
+    fontSize: 12,
+    fontWeight: "600",
+    marginTop: 4,
+    lineHeight: 16,
   },
   challengesList: {
-    gap: 0,
+    gap: 10,
   },
   challengeRow: {
     flexDirection: "row",
     alignItems: "center",
+    borderRadius: 14,
+    paddingVertical: 11,
+    paddingHorizontal: 12,
+    borderLeftWidth: 4,
+    overflow: "hidden",
   },
-  challengeRowMargin: {
-    marginTop: 24,
+  challengeRowLight: {
+    backgroundColor: "#F3F4F8",
+  },
+  challengeRowDark: {
+    backgroundColor: "#252528",
   },
   challengeCheckboxStack: {
     width: 28,
@@ -456,6 +513,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     zIndex: 2,
   },
+  taskCheckWide: {
+    transform: [{ scaleX: 1.22 }],
+  },
   challengeCheckbox: {
     width: 22,
     height: 22,
@@ -469,6 +529,10 @@ const styles = StyleSheet.create({
   challengeTitle: {
     fontSize: 15,
     fontWeight: "700",
+    lineHeight: 21,
+  },
+  challengeTitleDone: {
+    opacity: 0.55,
   },
   // Achievements Section
   achievementsSection: {

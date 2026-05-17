@@ -5,6 +5,8 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
 import { Ion } from "@/components/ui/icon";
 
+const HOME_GREEN = "#24bf55";
+
 export default function FocusScreen() {
   const Colors = useThemeColor();
   const { activeTheme } = useThemeStore();
@@ -142,7 +144,7 @@ const styles = StyleSheet.create({
     width: 18,
     height: 18,
     borderRadius: 9,
-    backgroundColor: "#F28C38",
+    backgroundColor: HOME_GREEN,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 2,
@@ -160,7 +162,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: "#F28C38",
+    backgroundColor: HOME_GREEN,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
