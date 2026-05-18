@@ -8,13 +8,14 @@ import {
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { type Href, useLocalSearchParams, useRouter } from "expo-router";
+import { type Href, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
 import { Button } from "@/components/ui/button";
 import { Ion } from "@/components/ui/icon";
 import { screenGradientColors, ONBOARDING_GRADIENT_LOCATIONS, SCREEN_GRADIENT_TOP } from "@/constants/brand";
+import { useOnboardingStore } from "@/store/onboarding-store";
 
 const OPTIONS = [
   { id: "quick_wins", label: "Small quick wins" },
@@ -24,13 +25,12 @@ const OPTIONS = [
 
 export default function FocusScreen() {
   const router = useRouter();
-  const { age, topic } = useLocalSearchParams<{ age: string, topic: string }>();
   const Colors = useThemeColor();
   const { activeTheme } = useThemeStore();
   const insets = useSafeAreaInsets();
+  const setOnboarding = useOnboardingStore((s) => s.set);
 
   const [focus, setFocus] = useState<string>("");
-  const [loading, setLoading] = useState(false);
 
   const isLight = activeTheme === "light";
 
@@ -38,7 +38,8 @@ export default function FocusScreen() {
 
   const handleContinue = async () => {
     if (!focus || loading) return;
-    router.push({ pathname: "/(onboarding)/difficulty", params: { age, topic, focus } } as any);
+    setOnboarding({ focus });
+    router.push("/(onboarding)/difficulty" as Href);
   };
 
   const handleBack = () => {
@@ -122,7 +123,6 @@ export default function FocusScreen() {
             <Button
               title="Continue"
               onPress={handleContinue}
-              loading={loading}
               style={{ ...styles.actionButton, opacity: !focus ? 0.5 : 1 }}
             />
           </View>

@@ -8,13 +8,14 @@ import {
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { type Href, useLocalSearchParams, useRouter } from "expo-router";
+import { type Href, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
 import { Button } from "@/components/ui/button";
 import { Ion } from "@/components/ui/icon";
 import { screenGradientColors, ONBOARDING_GRADIENT_LOCATIONS, SCREEN_GRADIENT_TOP } from "@/constants/brand";
+import { useOnboardingStore } from "@/store/onboarding-store";
 
 const OPTIONS = [
   { id: "slow", label: "Slow and steady" },
@@ -24,13 +25,12 @@ const OPTIONS = [
 
 export default function DifficultyScreen() {
   const router = useRouter();
-  const { age, topic, focus } = useLocalSearchParams<{ age: string, topic: string, focus: string }>();
   const Colors = useThemeColor();
   const { activeTheme } = useThemeStore();
   const insets = useSafeAreaInsets();
+  const setOnboarding = useOnboardingStore((s) => s.set);
 
   const [difficulty, setDifficulty] = useState<string>("");
-  const [loading, setLoading] = useState(false);
 
   const isLight = activeTheme === "light";
 
@@ -38,7 +38,8 @@ export default function DifficultyScreen() {
 
   const handleContinue = async () => {
     if (!difficulty || loading) return;
-    router.push({ pathname: "/(onboarding)/goal-time", params: { age, topic, focus, difficulty } } as any);
+    setOnboarding({ difficulty });
+    router.push("/(onboarding)/goal-time" as Href);
   };
 
   const handleBack = () => {
@@ -122,7 +123,6 @@ export default function DifficultyScreen() {
             <Button
               title="Continue"
               onPress={handleContinue}
-              loading={loading}
               style={{ ...styles.actionButton, opacity: !difficulty ? 0.5 : 1 }}
             />
           </View>

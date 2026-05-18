@@ -11,9 +11,37 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                    String             @id @default(cuid())
+  email                 String             @unique
+  name                  String?
+  passwordHash          String
+  onboardingCompletedAt DateTime?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  onboardingProfile     OnboardingProfile?
+}
+
+model OnboardingProfile {
+  id           String            @id @default(cuid())
+  userId       String            @unique
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ageRange     String
+  topic        String
+  focus        String
+  difficulty   String
+  dailyMinutes Int
+  frequency    String
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  tasks        OnboardingTask[]
+}
+
+model OnboardingTask {
+  id        String            @id @default(cuid())
+  profileId String
+  profile   OnboardingProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  title     String
+  source    String
+  order     Int
+  createdAt DateTime          @default(now())
 }

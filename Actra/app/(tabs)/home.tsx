@@ -132,7 +132,7 @@ export default function HomeScreen() {
             Good Morning Santanu! 🌻
           </Text>
           <Text style={[styles.title, { color: Colors.text }]}>
-            Today's Plan
+            Today&apos;s Plan
           </Text>
         </View>
         <Pressable

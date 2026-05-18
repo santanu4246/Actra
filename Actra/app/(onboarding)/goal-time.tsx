@@ -10,7 +10,7 @@ import {
   Animated,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { type Href, useLocalSearchParams, useRouter } from "expo-router";
+import { type Href, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
@@ -18,6 +18,7 @@ import * as Haptics from "expo-haptics";
 import { Button } from "@/components/ui/button";
 import { Ion } from "@/components/ui/icon";
 import { screenGradientColors, ONBOARDING_GRADIENT_LOCATIONS } from "@/constants/brand";
+import { useOnboardingStore } from "@/store/onboarding-store";
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
@@ -152,14 +153,13 @@ function WheelColumn({ data, value, onChange }: { data: {label: string, value: a
 
 export default function GoalTimeScreen() {
   const router = useRouter();
-  const { age, topic, focus, difficulty } = useLocalSearchParams<{ age: string, topic: string, focus: string, difficulty: string }>();
   const Colors = useThemeColor();
   const { activeTheme } = useThemeStore();
   const insets = useSafeAreaInsets();
+  const setOnboarding = useOnboardingStore((s) => s.set);
 
   const [hours, setHours] = useState(1);
   const [minutes, setMinutes] = useState(0);
-  const [loading, setLoading] = useState(false);
 
   const isLight = activeTheme === "light";
 
@@ -167,14 +167,10 @@ export default function GoalTimeScreen() {
 
   const isTimeUnset = hours === 0 && minutes === 0;
 
-  const handleContinue = async () => {
-    if (isTimeUnset || loading) return;
-    setLoading(true);
-    // Simulate saving goal & time preferences
-    setTimeout(() => {
-      setLoading(false);
-      router.push({ pathname: "/(onboarding)/goal-frequency", params: { age, topic, focus, difficulty, hours, minutes } } as any);
-    }, 150);
+  const handleContinue = () => {
+    if (isTimeUnset) return;
+    setOnboarding({ hours, minutes });
+    router.push("/(onboarding)/goal-frequency" as Href);
   };
 
   const handleBack = () => {
@@ -236,7 +232,6 @@ export default function GoalTimeScreen() {
             <Button
               title="Continue"
               onPress={handleContinue}
-              loading={loading}
               style={{ ...styles.actionButton, opacity: isTimeUnset ? 0.5 : 1 }}
             />
           </View>

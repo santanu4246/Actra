@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import {
+  Alert,
   Platform,
   StatusBar,
   StyleSheet,
@@ -25,6 +26,8 @@ import {
   GREEN_SOLID,
   GREEN_TINT_LIGHT,
 } from "@/constants/brand";
+import { api } from "@/lib/api";
+import { useOnboardingStore } from "@/store/onboarding-store";
 
 type TaskSource = "generated" | "manual";
 
@@ -45,12 +48,15 @@ export default function ReviewTasksScreen() {
   const Colors = useThemeColor();
   const { activeTheme } = useThemeStore();
   const insets = useSafeAreaInsets();
+  const onboardingData = useOnboardingStore((s) => s.data);
+  const resetOnboarding = useOnboardingStore((s) => s.reset);
 
   const [tasks, setTasks] = useState<Task[]>(MOCK_GENERATED_TASKS);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
   const modalInputRef = useRef<TextInput>(null);
 
@@ -117,8 +123,39 @@ export default function ReviewTasksScreen() {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 150);
   };
 
-  const handleContinue = () => {
-    router.replace("/(tabs)/home" as Href);
+  const handleContinue = async () => {
+    if (submitting) return;
+    const { ageRange, topic, focus, difficulty, hours = 0, minutes = 0, frequency } = onboardingData;
+
+    if (!ageRange || !topic || !focus || !difficulty || !frequency) {
+      Alert.alert("Incomplete", "Some onboarding steps are missing. Please go back and complete them.");
+      return;
+    }
+
+    const dailyMinutes = hours * 60 + minutes;
+    if (dailyMinutes <= 0) {
+      Alert.alert("Incomplete", "Please set a daily time goal before continuing.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await api.onboarding.submit({
+        ageRange,
+        topic,
+        focus,
+        difficulty,
+        dailyMinutes,
+        frequency,
+        tasks: tasks.map((t) => ({ title: t.title, source: t.source })),
+      });
+      resetOnboarding();
+      router.replace("/(tabs)/home" as Href);
+    } catch (err: any) {
+      Alert.alert("Error", err.message ?? "Failed to save your plan. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleBack = () => {
@@ -176,7 +213,7 @@ export default function ReviewTasksScreen() {
           Does this plan feel right?
         </Text>
         <Text style={[styles.subtitle, { color: Colors.textSecondary }]}>
-          Tap any task to edit, remove what you don't need, or add your own.
+          Tap any task to edit, remove what you don&apos;t need, or add your own.
         </Text>
       </View>
 
@@ -265,6 +302,7 @@ export default function ReviewTasksScreen() {
         <Button
           title="Continue"
           onPress={handleContinue}
+          loading={submitting}
           style={styles.continueButton}
         />
       </View>

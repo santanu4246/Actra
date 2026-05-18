@@ -15,6 +15,7 @@ import { useThemeStore } from "@/store/theme-store";
 import { Button } from "@/components/ui/button";
 import { Ion } from "@/components/ui/icon";
 import { screenGradientColors, ONBOARDING_GRADIENT_LOCATIONS, SCREEN_GRADIENT_TOP } from "@/constants/brand";
+import { useOnboardingStore } from "@/store/onboarding-store";
 
 const AGE_GROUPS = [
   { id: "18-24", label: "18-24" },
@@ -31,7 +32,7 @@ export default function AgeScreen() {
   const insets = useSafeAreaInsets();
 
   const [age, setAge] = useState<string>("");
-  const [loading, setLoading] = useState(false);
+  const setOnboarding = useOnboardingStore((s) => s.set);
 
   const isLight = activeTheme === "light";
 
@@ -39,7 +40,8 @@ export default function AgeScreen() {
 
   const handleContinue = async () => {
     if (!age || loading) return;
-    router.push({ pathname: "/(onboarding)/goal", params: { age } } as any);
+    setOnboarding({ ageRange: age });
+    router.push("/(onboarding)/goal" as Href);
   };
 
   const handleBack = () => {
@@ -123,8 +125,7 @@ export default function AgeScreen() {
             <Button
               title="Continue"
               onPress={handleContinue}
-              loading={loading}
-              style={{ ...styles.actionButton, opacity: !age ? 0.5 : 1 }}
+          style={{ ...styles.actionButton, opacity: !age ? 0.5 : 1 }}
             />
           </View>
         </View>

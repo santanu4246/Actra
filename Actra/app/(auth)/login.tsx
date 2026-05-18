@@ -44,8 +44,7 @@ export default function LoginScreen() {
     terms: "",
   });
 
-  const { login, signup, loginError, signupError, clearErrors } =
-    useAuthStore();
+  const { login, signup, loginError, signupError, clearErrors } = useAuthStore();
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
@@ -118,18 +117,18 @@ export default function LoginScreen() {
 
     try {
       setLoading(true);
-      let success = false;
-
       if (isLogin) {
-        success = await login(email, password);
+        const result = await login(email, password);
+        if (result.success) {
+          if (result.onboardingCompleted) {
+            router.replace("/(tabs)/home" as Href);
+          } else {
+            router.replace("/(onboarding)/age" as Href);
+          }
+        }
       } else {
-        success = await signup(fullName, email, password);
-      }
-
-      if (success) {
-        if (isLogin) {
-          router.replace("/(tabs)/home" as Href);
-        } else {
+        const success = await signup(fullName, email, password);
+        if (success) {
           router.replace("/(onboarding)/age" as Href);
         }
       }

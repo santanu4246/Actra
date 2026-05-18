@@ -8,13 +8,14 @@ import {
   View,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { type Href, useLocalSearchParams, useRouter } from "expo-router";
+import { type Href, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
 import { Button } from "@/components/ui/button";
 import { Ion } from "@/components/ui/icon";
 import { screenGradientColors, ONBOARDING_GRADIENT_LOCATIONS, SCREEN_GRADIENT_TOP } from "@/constants/brand";
+import { useOnboardingStore } from "@/store/onboarding-store";
 
 const FREQUENCIES = [
   { id: "daily", label: "Daily" },
@@ -24,13 +25,12 @@ const FREQUENCIES = [
 
 export default function GoalFrequencyScreen() {
   const router = useRouter();
-  const { age, topic, focus, difficulty, hours, minutes } = useLocalSearchParams<{ age: string, topic: string, focus: string, difficulty: string, hours: string, minutes: string }>();
   const Colors = useThemeColor();
   const { activeTheme } = useThemeStore();
   const insets = useSafeAreaInsets();
+  const setOnboarding = useOnboardingStore((s) => s.set);
 
   const [frequency, setFrequency] = useState<string>("");
-  const [loading, setLoading] = useState(false);
 
   const isLight = activeTheme === "light";
 
@@ -38,12 +38,8 @@ export default function GoalFrequencyScreen() {
 
   const handleContinue = async () => {
     if (!frequency || loading) return;
-    setLoading(true);
-    // Simulate saving all goal preferences
-    setTimeout(() => {
-      setLoading(false);
-      router.replace("/(onboarding)/generating" as Href);
-    }, 600);
+    setOnboarding({ frequency });
+    router.replace("/(onboarding)/generating" as Href);
   };
 
   const handleBack = () => {
@@ -148,7 +144,6 @@ export default function GoalFrequencyScreen() {
             <Button
               title="Continue"
               onPress={handleContinue}
-              loading={loading}
               style={{ ...styles.actionButton, opacity: !frequency ? 0.5 : 1 }}
             />
           </View>
