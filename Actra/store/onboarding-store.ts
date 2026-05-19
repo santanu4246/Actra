@@ -8,6 +8,8 @@ export type OnboardingData = {
   hours: number;
   minutes: number;
   frequency: string;
+  planStartDate: string; // ISO string
+  planEndDate: string;   // ISO string
 };
 
 type OnboardingState = {

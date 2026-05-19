@@ -39,7 +39,7 @@ export default function GoalFrequencyScreen() {
   const handleContinue = async () => {
     if (!frequency) return;
     setOnboarding({ frequency });
-    router.replace("/(onboarding)/generating" as Href);
+    router.replace("/(onboarding)/plan-dates" as Href);
   };
 
   const handleBack = () => {
@@ -70,7 +70,7 @@ export default function GoalFrequencyScreen() {
           <Ion name="chevron-back" size={28} color={Colors.text} />
         </TouchableOpacity>
         <View style={[styles.progressTrack, { backgroundColor: isLight ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)" }]}>
-          <View style={[styles.progressFill, { width: "100%", backgroundColor: Colors.text }]} />
+          <View style={[styles.progressFill, { width: "90%", backgroundColor: Colors.text }]} />
         </View>
       </View>
       <View style={styles.container}>

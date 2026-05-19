@@ -29,9 +29,11 @@ model OnboardingProfile {
   topic        String
   focus        String
   difficulty   String
-  dailyMinutes Int
-  frequency    String
-  createdAt    DateTime          @default(now())
+  dailyMinutes  Int
+  frequency     String
+  planStartDate DateTime
+  planEndDate   DateTime
+  createdAt     DateTime         @default(now())
   updatedAt    DateTime          @updatedAt
   tasks        OnboardingTask[]
 }

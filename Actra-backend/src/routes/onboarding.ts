@@ -11,15 +11,22 @@ const TaskSchema = z.object({
   source: z.enum(["generated", "manual"]),
 });
 
-const OnboardingSchema = z.object({
-  ageRange: z.string().trim().min(1, "Age range is required"),
-  topic: z.string().trim().min(1, "Topic is required"),
-  focus: z.enum(["quick_wins", "deep_focus", "mixed"]),
-  difficulty: z.enum(["slow", "balanced", "challenge"]),
-  dailyMinutes: z.number().int().positive("Daily minutes must be positive"),
-  frequency: z.enum(["daily", "three_days", "weekend"]),
-  tasks: z.array(TaskSchema).min(1, "At least one task is required"),
-});
+const OnboardingSchema = z
+  .object({
+    ageRange: z.string().trim().min(1, "Age range is required"),
+    topic: z.string().trim().min(1, "Topic is required"),
+    focus: z.enum(["quick_wins", "deep_focus", "mixed"]),
+    difficulty: z.enum(["slow", "balanced", "challenge"]),
+    dailyMinutes: z.number().int().positive("Daily minutes must be positive"),
+    frequency: z.enum(["daily", "three_days", "weekend"]),
+    planStartDate: z.string().datetime({ message: "Invalid start date" }),
+    planEndDate: z.string().datetime({ message: "Invalid end date" }),
+    tasks: z.array(TaskSchema).min(1, "At least one task is required"),
+  })
+  .refine((d) => new Date(d.planEndDate) >= new Date(d.planStartDate), {
+    message: "End date must be on or after start date",
+    path: ["planEndDate"],
+  });
 
 router.get("/", requireAuth, async (req: AuthRequest, res) => {
   const { userId } = req.user;
@@ -44,6 +51,8 @@ router.get("/", requireAuth, async (req: AuthRequest, res) => {
       difficulty: profile.difficulty,
       dailyMinutes: profile.dailyMinutes,
       frequency: profile.frequency,
+      planStartDate: profile.planStartDate.toISOString(),
+      planEndDate: profile.planEndDate.toISOString(),
     },
     tasks: profile.tasks.map((t) => ({
       id: t.id,
@@ -62,7 +71,7 @@ router.post("/", requireAuth, async (req: AuthRequest, res) => {
     return;
   }
 
-  const { ageRange, topic, focus, difficulty, dailyMinutes, frequency, tasks } =
+  const { ageRange, topic, focus, difficulty, dailyMinutes, frequency, planStartDate, planEndDate, tasks } =
     result.data;
 
   await db.$transaction(async (tx) => {
@@ -75,11 +84,11 @@ router.post("/", requireAuth, async (req: AuthRequest, res) => {
       await tx.onboardingTask.deleteMany({ where: { profileId: existing.id } });
       profile = await tx.onboardingProfile.update({
         where: { userId },
-        data: { ageRange, topic, focus, difficulty, dailyMinutes, frequency },
+        data: { ageRange, topic, focus, difficulty, dailyMinutes, frequency, planStartDate: new Date(planStartDate), planEndDate: new Date(planEndDate) },
       });
     } else {
       profile = await tx.onboardingProfile.create({
-        data: { userId, ageRange, topic, focus, difficulty, dailyMinutes, frequency },
+        data: { userId, ageRange, topic, focus, difficulty, dailyMinutes, frequency, planStartDate: new Date(planStartDate), planEndDate: new Date(planEndDate) },
       });
     }
 

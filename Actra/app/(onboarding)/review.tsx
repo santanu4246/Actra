@@ -127,7 +127,7 @@ export default function ReviewTasksScreen() {
 
   const handleContinue = async () => {
     if (submitting) return;
-    const { ageRange, topic, focus, difficulty, hours = 0, minutes = 0, frequency } = onboardingData;
+    const { ageRange, topic, focus, difficulty, hours = 0, minutes = 0, frequency, planStartDate, planEndDate } = onboardingData;
 
     if (!ageRange || !topic || !focus || !difficulty || !frequency) {
       Alert.alert("Incomplete", "Some onboarding steps are missing. Please go back and complete them.");
@@ -140,6 +140,11 @@ export default function ReviewTasksScreen() {
       return;
     }
 
+    if (!planStartDate || !planEndDate) {
+      Alert.alert("Incomplete", "Please set plan start and end dates before continuing.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       await api.onboarding.submit({
@@ -149,6 +154,8 @@ export default function ReviewTasksScreen() {
         difficulty,
         dailyMinutes,
         frequency,
+        planStartDate,
+        planEndDate,
         tasks: tasks.map((t) => ({ title: t.title, source: t.source })),
       });
       markOnboardingComplete();

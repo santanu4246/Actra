@@ -30,6 +30,8 @@ export type OnboardingPayload = {
   difficulty: string;
   dailyMinutes: number;
   frequency: string;
+  planStartDate: string;
+  planEndDate: string;
   tasks: OnboardingTask[];
 };
 
@@ -47,6 +49,8 @@ export type PlanResponse = {
     difficulty: string;
     dailyMinutes: number;
     frequency: string;
+    planStartDate: string;
+    planEndDate: string;
   };
   tasks: PlanTask[];
 };
