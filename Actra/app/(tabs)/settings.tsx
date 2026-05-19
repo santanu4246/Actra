@@ -12,7 +12,9 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { type Href, useRouter } from "expo-router";
 import { useThemeStore } from "@/store/theme-store";
+import { useAuthStore } from "@/store/auth-store";
 import { Ion } from "@/components/ui/icon";
 
 type SettingRowProps = {
@@ -87,12 +89,28 @@ function SettingRow({
 }
 
 export default function SettingsScreen() {
+  const router = useRouter();
   const Colors = useThemeColor();
   const { activeTheme, setTheme } = useThemeStore();
+  const { user, logout } = useAuthStore();
   const insets = useSafeAreaInsets();
   const isLight = activeTheme === "light";
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+
+  const displayName = user?.name?.trim() || "User";
+  const initials =
+    displayName
+      .split(/\s+/)
+      .map((p) => p[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "U";
+
+  const handleLogout = async () => {
+    await logout();
+    router.replace("/(auth)/_welcome" as Href);
+  };
 
   return (
     <View
@@ -125,12 +143,12 @@ export default function SettingsScreen() {
         <View style={[styles.card, { backgroundColor: isLight ? "#FFFFFF" : "#1E1E1E" }]}>
           <View style={styles.profileHeader}>
             <View style={styles.profileAvatar}>
-              <Text style={styles.profileInitials}>S</Text>
+              <Text style={styles.profileInitials}>{initials}</Text>
             </View>
             <View style={styles.profileInfo}>
-              <Text style={[styles.profileName, { color: Colors.text }]}>Santanu</Text>
+              <Text style={[styles.profileName, { color: Colors.text }]}>{displayName}</Text>
               <Text style={[styles.profileEmail, { color: Colors.textSecondary }]}>
-                santanu@example.com
+                {user?.email ?? ""}
               </Text>
             </View>
             <TouchableOpacity style={[styles.editButton, { backgroundColor: isLight ? "#F3F4F8" : "#252528" }]}>
@@ -230,7 +248,7 @@ export default function SettingsScreen() {
               { backgroundColor: isLight ? "#FFEBEB" : "rgba(255, 59, 48, 0.1)" },
             ]}
             activeOpacity={0.7}
-            onPress={() => {}}
+            onPress={handleLogout}
           >
             <Ion name="log-out-outline" size={20} color="#FF3B30" style={styles.logoutIcon} />
             <Text style={styles.logoutButtonText}>Log Out</Text>

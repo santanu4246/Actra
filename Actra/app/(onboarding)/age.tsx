@@ -39,7 +39,7 @@ export default function AgeScreen() {
   const gradientColors = screenGradientColors(isLight);
 
   const handleContinue = async () => {
-    if (!age || loading) return;
+    if (!age) return;
     setOnboarding({ ageRange: age });
     router.push("/(onboarding)/goal" as Href);
   };

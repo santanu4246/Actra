@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   Platform,
   Pressable,
@@ -13,6 +14,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { useThemeStore } from "@/store/theme-store";
+import { useAuthStore } from "@/store/auth-store";
+import { api } from "@/lib/api";
 import { Ion } from "@/components/ui/icon";
 import { SparkIcon } from "@/components/ui/task-tick";
 
@@ -32,28 +35,6 @@ const BLUE_TICK_BORDER = "#3A85FF";
 /** Per-task neon accent (left glow + checkbox frame). */
 const taskAccentFor = (c: Challenge) =>
   c.boxColor ?? (c.tickVariant === "green" ? "#7CE800" : BLUE_TICK_BORDER);
-
-const INITIAL_CHALLENGES: Challenge[] = [
-  {
-    id: "1",
-    title: "Practice Sprint: answer 35 adaptive questions",
-    tickVariant: "green",
-    completed: false,
-  },
-  {
-    id: "2",
-    title: "Goal Builder: solve 28 weak-topic questions",
-    boxColor: "#ffb75e",
-    tickVariant: "blue",
-    completed: false,
-  },
-  {
-    id: "3",
-    title: "Daily Wrap: complete 24 revision questions",
-    tickVariant: "blue",
-    completed: true,
-  },
-];
 
 const DAYS = [
   { id: "mon", label: "Mon", status: "completed" },
@@ -96,14 +77,51 @@ const ACHIEVEMENTS = [
   },
 ];
 
+function greetingForHour() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good Morning";
+  if (h < 17) return "Good Afternoon";
+  return "Good Evening";
+}
+
 export default function HomeScreen() {
   const Colors = useThemeColor();
   const { activeTheme } = useThemeStore();
+  const user = useAuthStore((s) => s.user);
   const insets = useSafeAreaInsets();
 
-  const [challenges] = useState<Challenge[]>(INITIAL_CHALLENGES);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [loadingPlan, setLoadingPlan] = useState(true);
 
   const isLight = activeTheme === "light";
+
+  const firstName = user?.name?.trim().split(/\s+/)[0] ?? "there";
+
+  const loadPlan = useCallback(async () => {
+    setLoadingPlan(true);
+    try {
+      const data = await api.onboarding.getPlan();
+      setChallenges(
+        data.tasks.map((t, i) => ({
+          id: t.id,
+          title: t.title,
+          tickVariant: i % 2 === 0 ? "green" : "blue",
+          completed: false,
+          ...(i === 1 ? { boxColor: "#ffb75e" } : {}),
+        }))
+      );
+    } catch {
+      setChallenges([]);
+    } finally {
+      setLoadingPlan(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadPlan();
+    }, [loadPlan])
+  );
 
   const streakDashBorderCompleted = "#000000";
   const streakDashBorderToday = "#000000";
@@ -129,7 +147,7 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Text style={[styles.greetingText, { color: Colors.textSecondary }]}>
-            Good Morning Santanu! 🌻
+            {greetingForHour()} {firstName}! 🌻
           </Text>
           <Text style={[styles.title, { color: Colors.text }]}>
             Today&apos;s Plan
@@ -242,6 +260,15 @@ export default function HomeScreen() {
           </View>
 
           <View style={styles.challengesList}>
+            {loadingPlan ? (
+              <Text style={{ color: Colors.textSecondary, paddingVertical: 12 }}>
+                Loading your plan...
+              </Text>
+            ) : challenges.length === 0 ? (
+              <Text style={{ color: Colors.textSecondary, paddingVertical: 12 }}>
+                No tasks yet. Complete onboarding to generate your plan.
+              </Text>
+            ) : null}
             {challenges.map((challenge) => {
               const accent = taskAccentFor(challenge);
               return (

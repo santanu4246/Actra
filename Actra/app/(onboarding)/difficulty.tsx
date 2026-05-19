@@ -37,7 +37,7 @@ export default function DifficultyScreen() {
   const gradientColors = screenGradientColors(isLight);
 
   const handleContinue = async () => {
-    if (!difficulty || loading) return;
+    if (!difficulty) return;
     setOnboarding({ difficulty });
     router.push("/(onboarding)/goal-time" as Href);
   };

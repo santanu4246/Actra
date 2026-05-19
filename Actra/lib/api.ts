@@ -4,6 +4,7 @@ import type {
   LoginResponse,
   MeResponse,
   OnboardingPayload,
+  PlanResponse,
 } from "@/types/api";
 
 const BASE_URL = (
@@ -57,6 +58,8 @@ export const api = {
   },
 
   onboarding: {
+    getPlan: () => request<PlanResponse>("/onboarding", { auth: true }),
+
     submit: (payload: OnboardingPayload) =>
       request<{ success: boolean }>("/onboarding", {
         method: "POST",

@@ -32,3 +32,21 @@ export type OnboardingPayload = {
   frequency: string;
   tasks: OnboardingTask[];
 };
+
+export type PlanTask = {
+  id: string;
+  title: string;
+  source: string;
+};
+
+export type PlanResponse = {
+  profile: {
+    topic: string;
+    ageRange: string;
+    focus: string;
+    difficulty: string;
+    dailyMinutes: number;
+    frequency: string;
+  };
+  tasks: PlanTask[];
+};

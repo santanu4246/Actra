@@ -6,22 +6,28 @@ import type { User } from "@/types/api";
 type AuthState = {
   user: User | null;
   token: string | null;
+  onboardingCompleted: boolean;
+  isHydrated: boolean;
   loginError: string | null;
   signupError: string | null;
-  isLoading: boolean;
   clearErrors: () => void;
-  login: (email: string, password: string) => Promise<{ success: boolean; onboardingCompleted: boolean }>;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; onboardingCompleted: boolean }>;
   signup: (fullName: string, email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   hydrate: () => Promise<void>;
+  markOnboardingComplete: () => void;
 };
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   token: null,
+  onboardingCompleted: false,
+  isHydrated: false,
   loginError: null,
   signupError: null,
-  isLoading: false,
 
   clearErrors: () => set({ loginError: null, signupError: null }),
 
@@ -30,7 +36,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const data = await api.auth.login({ email, password });
       await setToken(data.token);
-      set({ user: data.user, token: data.token });
+      set({
+        user: data.user,
+        token: data.token,
+        onboardingCompleted: data.onboardingCompleted,
+      });
       return { success: true, onboardingCompleted: data.onboardingCompleted };
     } catch (err: any) {
       set({ loginError: err.message ?? "Login failed" });
@@ -43,7 +53,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       const data = await api.auth.signup({ name: fullName, email, password });
       await setToken(data.token);
-      set({ user: data.user, token: data.token });
+      set({
+        user: data.user,
+        token: data.token,
+        onboardingCompleted: false,
+      });
       return true;
     } catch (err: any) {
       set({ signupError: err.message ?? "Sign up failed" });
@@ -53,20 +67,33 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: async () => {
     await deleteToken();
-    set({ user: null, token: null });
+    set({
+      user: null,
+      token: null,
+      onboardingCompleted: false,
+    });
   },
 
   hydrate: async () => {
-    set({ isLoading: true });
     try {
       const storedToken = await getToken();
-      if (!storedToken) return;
+      if (!storedToken) {
+        set({ user: null, token: null, onboardingCompleted: false });
+        return;
+      }
       const data = await api.auth.me();
-      set({ user: data.user, token: storedToken });
+      set({
+        user: data.user,
+        token: storedToken,
+        onboardingCompleted: data.onboardingCompleted,
+      });
     } catch {
       await deleteToken();
+      set({ user: null, token: null, onboardingCompleted: false });
     } finally {
-      set({ isLoading: false });
+      set({ isHydrated: true });
     }
   },
+
+  markOnboardingComplete: () => set({ onboardingCompleted: true }),
 }));

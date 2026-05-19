@@ -37,7 +37,7 @@ export default function FocusScreen() {
   const gradientColors = screenGradientColors(isLight);
 
   const handleContinue = async () => {
-    if (!focus || loading) return;
+    if (!focus) return;
     setOnboarding({ focus });
     router.push("/(onboarding)/difficulty" as Href);
   };

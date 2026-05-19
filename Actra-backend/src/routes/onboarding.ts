@@ -21,6 +21,38 @@ const OnboardingSchema = z.object({
   tasks: z.array(TaskSchema).min(1, "At least one task is required"),
 });
 
+router.get("/", requireAuth, async (req: AuthRequest, res) => {
+  const { userId } = req.user;
+
+  const profile = await db.onboardingProfile.findUnique({
+    where: { userId },
+    include: {
+      tasks: { orderBy: { order: "asc" } },
+    },
+  });
+
+  if (!profile) {
+    res.status(404).json({ error: "No plan found" });
+    return;
+  }
+
+  res.json({
+    profile: {
+      topic: profile.topic,
+      ageRange: profile.ageRange,
+      focus: profile.focus,
+      difficulty: profile.difficulty,
+      dailyMinutes: profile.dailyMinutes,
+      frequency: profile.frequency,
+    },
+    tasks: profile.tasks.map((t) => ({
+      id: t.id,
+      title: t.title,
+      source: t.source,
+    })),
+  });
+});
+
 router.post("/", requireAuth, async (req: AuthRequest, res) => {
   const { userId } = req.user;
 

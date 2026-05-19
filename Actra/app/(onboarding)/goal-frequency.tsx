@@ -37,7 +37,7 @@ export default function GoalFrequencyScreen() {
   const gradientColors = screenGradientColors(isLight);
 
   const handleContinue = async () => {
-    if (!frequency || loading) return;
+    if (!frequency) return;
     setOnboarding({ frequency });
     router.replace("/(onboarding)/generating" as Href);
   };

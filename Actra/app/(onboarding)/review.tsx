@@ -27,6 +27,7 @@ import {
   GREEN_TINT_LIGHT,
 } from "@/constants/brand";
 import { api } from "@/lib/api";
+import { useAuthStore } from "@/store/auth-store";
 import { useOnboardingStore } from "@/store/onboarding-store";
 
 type TaskSource = "generated" | "manual";
@@ -50,6 +51,7 @@ export default function ReviewTasksScreen() {
   const insets = useSafeAreaInsets();
   const onboardingData = useOnboardingStore((s) => s.data);
   const resetOnboarding = useOnboardingStore((s) => s.reset);
+  const markOnboardingComplete = useAuthStore((s) => s.markOnboardingComplete);
 
   const [tasks, setTasks] = useState<Task[]>(MOCK_GENERATED_TASKS);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -149,6 +151,7 @@ export default function ReviewTasksScreen() {
         frequency,
         tasks: tasks.map((t) => ({ title: t.title, source: t.source })),
       });
+      markOnboardingComplete();
       resetOnboarding();
       router.replace("/(tabs)/home" as Href);
     } catch (err: any) {
